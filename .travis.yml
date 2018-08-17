@@ -1,0 +1,43 @@
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode9.4
+      language: node_js
+      node_js: "10"
+      env:
+        - ELECTRON_CACHE=$HOME/.cache/electron
+        - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+
+    - os: linux
+      services: docker
+      language: generic
+
+cache:
+  directories:
+    - node_modules
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+
+script:
+  - |
+    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      docker run --rm \
+        --env-file <(env | grep -iE 'DEBUG|NODE_|ELECTRON_|YARN_|NPM_|CI|CIRCLE|TRAVIS|APPVEYOR_|CSC_|_TOKEN|_KEY|AWS_|STRIP|BUILD_') \
+        -v ${PWD}:/project \
+        -v ~/.cache/electron:/root/.cache/electron \
+        -v ~/.cache/electron-builder:/root/.cache/electron-builder \
+        electronuserland/builder:wine \
+        /bin/bash -c "yarn --link-duplicates --pure-lockfile && yarn release --linux --win"
+    else
+      yarn release
+    fi
+before_cache:
+  - rm -rf $HOME/.cache/electron-builder/wine
+
+branches:
+  only:
+  - deploy
+
+notifications:
+  slack:
+    secure: gcqQoGNnj1tgfHlS58ZzgT7l4CUGJBIrRgOodr+TiBziDnai/d8Kp2lxPwlbLUSFuZ+8nMH+GUl4cQmmUStTW0GZ3LimASij6cGRUCxFG6VlQqvp1E0A0dg9ItES8wyl560YhKF1wJUdi/UYR8tJldmgFXC7zFWUr3Uu7aXBUiiHaQr0X+9rZif7DPbkZWgRdkiAhEi3zPY8AaETBwiVoU6YW2GsWLoofYLhHQxNLXUuNiSssbqFt14RBu2cqdYYuH1yQDjyzTdRHE0YHmaD8Sk4l7EJEwxcLUcgndcfMgft4J3HB7AusvmTdT6S7ABPqp0DR6reRQ5Ir+hyTj8EX748MvAhPt+PYKJywbvGVY+mBHpRYd9Sbt+rgESwLmc6ZcouscJVY81dCobl3W8gzYOrzvZMeMxaOBd2UP37FlomQAND28p9deenGLZhp8bk+YcGnATp2MKzej6jAQ+Qd6HARJyv2ghhMwkfWwOGwesmvm2DQdMTRu/qZwyaFCSnxVODPj3ZK7FCtBg3GnXI6cdokZDJjz4CbDBr+0mn8lyoECSKsE3TY9H/yRYB4BAdplsA4P/1DJjwcIGBgHz+sfoB02hd3seOy6y4DlZaTZLGbDu74sehIzsZ7kjjMjdkb3wVARAx17Pyr7a/iXM7iczWKS4bNy5LgW+bY078a6U=
