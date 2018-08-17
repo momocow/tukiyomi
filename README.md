@@ -2,6 +2,7 @@
 Yet another scalable KanColle Browser.
 
 > 前方施工 🚧
+
 ![WIP](https://thumbs.gfycat.com/SpicyImmenseGraywolf-size_restricted.gif)
 
 ## 特色功能
