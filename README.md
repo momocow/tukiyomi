@@ -1,7 +1,7 @@
 # 月夜海瀏覽器 Tukiyomi Browser
 Yet another scalable KanColle Browser.
 
-> 前方施工 🚧
+> 🚧 WIP 🚧 前方施工 🚧
 
 ![WIP](https://thumbs.gfycat.com/SpicyImmenseGraywolf-size_restricted.gif)
 
