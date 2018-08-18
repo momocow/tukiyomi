@@ -34,15 +34,11 @@ function installDeps () {
     spaces: 2
   })
 
-  return exec(`npm ${(process.env.TRAVIS ? 'ci' : 'i')} --production --prefix .`, {
-    cwd: COMPILE_DIR
-  })
+  return exec(`npm ${(process.env.TRAVIS ? 'ci' : 'i')} --production`)
 }
 
 function dedupe () {
-  return exec(`npm dedupe --no-package-lock --prefix .`, {
-    cwd: COMPILE_DIR
-  })
+  return exec(`npm dedupe --no-package-lock`)
 }
 
 function compileScripts () {
