@@ -15,6 +15,7 @@ const {
   initCompile,
   // installDeps,
   // dedupe,
+  syncPkgJson,
   composeEssentials,
   compileScripts
 } = require('./build/scripts/compile')
@@ -29,6 +30,7 @@ gulp.task('compile',
     initCompile,
     gulp.parallel(
       // gulp.series(installDeps, dedupe),
+      syncPkgJson,
       composeEssentials,
       'compile:script'
     )
