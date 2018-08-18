@@ -10,6 +10,13 @@ Yet another scalable KanColle Browser.
 - [ ] GIF戰鬥紀錄
 - [ ] 練度統計
 
+## 開發者看板
+- 在新分支上進行任何修改
+- 主線 `master` 為最新版本
+- 請不要在分支 `deploy` 上直接 commit, 推送到這個分支會觸發建置&部屬
+
+## 歡迎 PR 🙏
+
 ## Slack交流頻道
 [Tukiyomi@Slack](https://tuki-yomi.slack.com/messages/CCBG49A07)
 

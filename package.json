@@ -9,7 +9,7 @@
     "compile": "gulp compile",
     "build": "gulp build",
     "release": "gulp compile && gulp build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo No tests yet. Pass it!"
   },
   "repository": {
     "type": "git",
