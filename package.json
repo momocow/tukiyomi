@@ -50,7 +50,7 @@
     "vue-template-compiler": "^2.5.17"
   },
   "dependencies": {
-    "node-http-proxy": "^0.2.3",
+    "http-proxy": "^1.17.0",
     "vue": "^2.5.17"
   }
 }
