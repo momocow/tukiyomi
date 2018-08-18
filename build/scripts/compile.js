@@ -5,9 +5,12 @@ const srcmap = require('gulp-sourcemaps')
 const ts = require('gulp-typescript')
 const minify = require('gulp-uglify')
 const { exec } = require('child_process')
+const Bundler = require('parcel-bundler')
 
 const COMPILE_DIR = path.join(global.ROOT_DIR, 'compiled')
 const SRC_DIR = path.join(global.ROOT_DIR, 'src')
+const COMPILED_VIEWS_DIR = path.join(COMPILE_DIR, 'views')
+const VIEWS_ENTRY = path.join(global.ROOT_DIR, 'views', 'index.html')
 
 const SHOULD_SYNC = [
   'dependencies'
@@ -61,11 +64,25 @@ function composeEssentials () {
   return Promise.all(promises)
 }
 
+function compileViews () {
+  const bundler = new Bundler(VIEWS_ENTRY, {
+    outDir: COMPILED_VIEWS_DIR,
+    watch: false,
+    minify: true,
+    sourceMaps: true,
+    target: 'electron',
+    publicUrl: './'
+  })
+
+  return bundler.bundle()
+}
+
 module.exports = {
   initCompile,
   installDeps,
   dedupe,
   composeEssentials,
   compileScripts,
-  syncPkgJson
+  syncPkgJson,
+  compileViews
 }

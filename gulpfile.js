@@ -13,23 +13,25 @@ const ARGS = mri(process.argv.slice(2), {
 const build = require('./build/scripts/build')
 const {
   initCompile,
-  // installDeps,
-  // dedupe,
   syncPkgJson,
   composeEssentials,
-  compileScripts
+  compileScripts,
+  compileViews
 } = require('./build/scripts/compile')
 const {
-  watchAndCompile
+  watchSrcAndCompile,
+  watchViewsAndCompile
 } = require('./build/scripts/watch')
 
+gulp.task('compile:views', compileViews)
 gulp.task('compile:script', compileScripts)
 
 gulp.task('compile',
   gulp.series(
     initCompile,
+    // for not breaking Parcel's pretty console output ;)
+    'compile:views',
     gulp.parallel(
-      // gulp.series(installDeps, dedupe),
       syncPkgJson,
       composeEssentials,
       'compile:script'
@@ -42,5 +44,6 @@ gulp.task('build', function initBuild () {
 })
 
 gulp.task('watch', function initWatch () {
-  return watchAndCompile(gulp.parallel('compile:script', composeEssentials))
+  watchViewsAndCompile(gulp.series('compile:views'))
+  return watchSrcAndCompile(gulp.parallel('compile:script', composeEssentials))
 })
