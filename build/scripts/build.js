@@ -7,7 +7,7 @@ module.exports = function ({ win, linux }, travis) {
   return builder.build({
     config: travis ? join(BUILD_KIT_ROOT, 'travis-build.toml')
       : join(BUILD_KIT_ROOT, 'local-build.toml'),
-    win,
-    linux
+    win: win ? [] : undefined,
+    linux: linux ? [] : undefined
   })
 }
