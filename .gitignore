@@ -7,6 +7,7 @@ yarn-error.log*
 
 # compiled app
 compiled
+.cache
 
 # Prebuilt bin
 dist

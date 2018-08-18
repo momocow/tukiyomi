@@ -14,7 +14,7 @@ const SHOULD_SYNC = [
 ]
 
 const RESOURCES = [
-  'assets'
+  'assets/icons'
 ]
 
 // default to clean up all compiled
