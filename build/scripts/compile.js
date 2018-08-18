@@ -26,14 +26,16 @@ function initCompile () {
   return fs.ensureDir(COMPILE_DIR)
 }
 
-function installDeps () {
+function syncPkgJson () {
   const DEV_PKG = require(path.join(global.ROOT_DIR, 'package.json'))
   const PROD_PKG = require(path.join(global.ROOT_DIR, 'assets', 'prod-package.json'))
   SHOULD_SYNC.forEach(p => (PROD_PKG[p] = DEV_PKG[p]))
-  fs.outputJSONSync(path.join(COMPILE_DIR, 'package.json'), PROD_PKG, {
+  return fs.outputJSON(path.join(COMPILE_DIR, 'package.json'), PROD_PKG, {
     spaces: 2
   })
+}
 
+function installDeps () {
   return exec(`npm ${(process.env.TRAVIS ? 'ci' : 'i')} --production`)
 }
 
@@ -64,5 +66,6 @@ module.exports = {
   installDeps,
   dedupe,
   composeEssentials,
-  compileScripts
+  compileScripts,
+  syncPkgJson
 }
