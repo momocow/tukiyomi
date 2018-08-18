@@ -17,8 +17,8 @@ const ARGS = mri(process.argv.slice(2), {
 const build = require('./build/scripts/build')
 const {
   initCompile,
-  installDeps,
-  dedupe,
+  // installDeps,
+  // dedupe,
   composeEssentials,
   compileScripts
 } = require('./build/scripts/compile')
@@ -32,7 +32,7 @@ gulp.task('compile',
   gulp.series(
     initCompile,
     gulp.parallel(
-      gulp.series(installDeps, dedupe),
+      // gulp.series(installDeps, dedupe),
       composeEssentials,
       'compile:script'
     )
