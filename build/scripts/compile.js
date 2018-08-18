@@ -3,7 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const srcmap = require('gulp-sourcemaps')
 const ts = require('gulp-typescript')
-const minify = require('gulp-babel-minify')
+const minify = require('gulp-uglify')
 const { exec } = require('child_process')
 
 const COMPILE_DIR = path.join(global.ROOT_DIR, 'compiled')
@@ -30,13 +30,19 @@ function installDeps () {
   const DEV_PKG = require(path.join(global.ROOT_DIR, 'package.json'))
   const PROD_PKG = require(path.join(global.ROOT_DIR, 'assets', 'prod-package.json'))
   SHOULD_SYNC.forEach(p => (PROD_PKG[p] = DEV_PKG[p]))
-  fs.outputJSONSync(path.join(COMPILE_DIR, 'package.json'), PROD_PKG)
+  fs.outputJSONSync(path.join(COMPILE_DIR, 'package.json'), PROD_PKG, {
+    spaces: 2
+  })
 
-  return exec(`npm ${(process.env.TRAVIS ? 'ci' : 'i')} --production`)
+  return exec(`npm ${(process.env.TRAVIS ? 'ci' : 'i')} --production --prefix .`, {
+    cwd: COMPILE_DIR
+  })
 }
 
 function dedupe () {
-  return exec(`npm dedupe --no-package-lock`)
+  return exec(`npm dedupe --no-package-lock --prefix .`, {
+    cwd: COMPILE_DIR
+  })
 }
 
 function compileScripts () {

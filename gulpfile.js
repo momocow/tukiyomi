@@ -22,7 +22,9 @@ const {
   composeEssentials,
   compileScripts
 } = require('./build/scripts/compile')
-const { watchAndCompile } = require('./build/scripts/watch')
+const {
+  watchAndCompile
+} = require('./build/scripts/watch')
 
 gulp.task('compile:script', compileScripts)
 
@@ -42,5 +44,5 @@ gulp.task('build', function initBuild () {
 })
 
 gulp.task('watch', function initWatch () {
-  return watchAndCompile(gulp.series('compile:script'))
+  return watchAndCompile(gulp.parallel('compile:script', composeEssentials))
 })
