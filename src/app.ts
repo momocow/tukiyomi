@@ -1,7 +1,8 @@
+import { VIEWS_DIR, IS_DEV } from './init'
+
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 
-import { VIEWS_DIR } from './constants'
 
 function createWindow () {
   const window: BrowserWindow = new BrowserWindow({
@@ -11,8 +12,12 @@ function createWindow () {
     }
   })
   window.loadFile(VIEWS_DIR)
-  window.webContents.openDevTools({
-    mode: "undocked"
+  window.webContents.on('did-finish-load', function () {
+    if (IS_DEV) {
+      window.webContents.openDevTools({
+        mode: "undocked"
+      })
+    }
   })
 }
 

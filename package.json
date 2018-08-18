@@ -26,6 +26,9 @@
   },
   "homepage": "https://github.com/momocow/tukiyomi#readme",
   "devDependencies": {
+    "@types/lodash.get": "^4.4.4",
+    "@types/lodash.padend": "^4.6.4",
+    "@types/lodash.set": "^4.3.4",
     "@vue/component-compiler-utils": "^2.2.0",
     "electron": "^2.0.7",
     "electron-builder": "^20.28.1",
@@ -51,6 +54,9 @@
   },
   "dependencies": {
     "http-proxy": "^1.17.0",
+    "lodash.get": "^4.4.2",
+    "lodash.padend": "^4.6.1",
+    "lodash.set": "^4.3.2",
     "vue": "^2.5.17"
   }
 }
