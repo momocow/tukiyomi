@@ -1,3 +1,7 @@
 module.exports = {
-    "extends": "standard"
+    "extends": "standard",
+    "parser": "typescript-eslint-parser",
+    "plugins": [
+        "typescript"
+    ]
 };

@@ -1,0 +1,51 @@
+appId = "me.momocow.tukiyomi"
+productName = "tukiyomi"
+artifactName = "tukiyomi-v${version}-local.${ext}"
+asar = true
+npmRebuild = true
+files = [
+  "**/*.js",
+  "../assets/icons/*.png"
+]
+
+[win]
+publish = [
+  "github"
+]
+icon = "assets/icons/tukiyomi.ico"
+
+  [[win.target]]
+  target = "nsis"
+  arch = [
+    "x64",
+    "ia32"
+  ]
+
+  [[win.target]]
+  target = "7z"
+  arch = [
+    "x64",
+    "ia32"
+  ]
+
+[nsis]
+artifactName = "tukiyomi-setup-v${version}-local.${ext}"
+oneClick = false
+allowToChangeInstallationDirectory = true
+multiLanguageInstaller = true
+
+[linux]
+publish = [
+  "github"
+]
+target = [
+  "7z",
+  "deb",
+  "rpm",
+  "pacman",
+  "AppImage"
+]
+icon = "assets/icons"
+
+[directories]
+app = "compiled"

@@ -1,0 +1,20 @@
+{
+  "name": "tukiyomi",
+  "version": "0.0.0",
+  "description": "Yet another scalable KanColle Viewer.",
+  "main": "./app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/momocow/tukiyomi.git"
+  },
+  "keywords": [
+    "KanColle",
+    "Browser"
+  ],
+  "author": "MomoCow",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/momocow/tukiyomi/issues"
+  },
+  "homepage": "https://github.com/momocow/tukiyomi#readme"
+}
