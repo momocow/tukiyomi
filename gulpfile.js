@@ -7,11 +7,7 @@ const ARGS = mri(process.argv.slice(2), {
   alias: {
     win: 'w',
     linux: 'l'
-  },
-  boolean: [
-    'win',
-    'linux'
-  ]
+  }
 })
 
 const build = require('./build/scripts/build')
