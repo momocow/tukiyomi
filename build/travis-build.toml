@@ -1,9 +1,3 @@
-name = "tukiyomi"
-homepage = "https://github.com/momocow/tukiyomi#readme"
-description = "Yet another scalable KanColle Viewer."
-author = "MomoCow"
-license = "MIT"
-
 appId = "me.momocow.tukiyomi"
 productName = "tukiyomi"
 artifactName = "tukiyomi-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
@@ -13,10 +7,6 @@ files = [
   "**/*.js",
   "../assets/icons/*.png"
 ]
-
-[repository]
-type = "git"
-url = "git+https://github.com/momocow/tukiyomi.git"
 
 [win]
 publish = [
@@ -56,6 +46,7 @@ target = [
   "AppImage"
 ]
 icon = "assets/icons"
+maintainer = "MomoCow"
 
 [directories]
 app = "compiled"
