@@ -1,14 +1,16 @@
 import { app, BrowserWindow } from 'electron'
 import * as path from 'path'
 
-import { VIEWS_ENTRY } from './constants'
+import { VIEWS_DIR } from './constants'
 
 function createWindow () {
-  const window = new BrowserWindow({
+  const window: BrowserWindow = new BrowserWindow({
     width: 800,
-    height: 600
+    height: 600,
+    webPreferences: {
+    }
   })
-  window.loadFile(VIEWS_ENTRY)
+  window.loadFile(VIEWS_DIR)
   window.webContents.openDevTools({
     mode: "undocked"
   })
