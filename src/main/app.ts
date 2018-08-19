@@ -1,7 +1,7 @@
-import { VIEWS_DIR, IS_DEV } from './init'
+import { VIEW_ENTRY, IS_DEV } from './init'
 
 import { app, BrowserWindow } from 'electron'
-import * as path from 'path'
+// import * as path from 'path'
 
 
 function createWindow () {
@@ -11,7 +11,7 @@ function createWindow () {
     webPreferences: {
     }
   })
-  window.loadFile(VIEWS_DIR)
+  window.loadFile(VIEW_ENTRY)
   window.webContents.on('did-finish-load', function () {
     if (IS_DEV) {
       window.webContents.openDevTools({

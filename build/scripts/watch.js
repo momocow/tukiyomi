@@ -2,7 +2,7 @@ const gulp = require('gulp')
 
 function watchViewsAndCompile (onChange) {
   return gulp.watch([
-    'views/**/*'
+    'src/view/**/*'
   ], onChange)
 }
 

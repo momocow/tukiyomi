@@ -1,7 +1,7 @@
 import IService from './IService'
 import { format } from 'util'
 
-import _padEnd = require('lodash.padend')
+import _padEnd from 'lodash/padend'
 
 class LogLevel {
   public name: string
@@ -30,7 +30,7 @@ const LEVELS = {
   SILENT: new LogLevel('SILENT', 50)
 }
 
-export = class Logger implements IService {
+export default class Logger implements IService {
   public readonly service: string = 'logger'
 
   public name: string

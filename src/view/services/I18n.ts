@@ -2,7 +2,7 @@ import IService from './IService'
 
 import { EventEmitter } from 'events'
 
-export = class I18n extends EventEmitter implements IService {
+export default class I18n extends EventEmitter implements IService {
   public readonly service: string = 'i18n'
 
   private _dict: Map<string, string> = new Map()

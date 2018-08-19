@@ -3,6 +3,10 @@ const mri = require('mri')
 
 global.ROOT_DIR = __dirname
 
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'development'
+}
+
 const ARGS = mri(process.argv.slice(2), {
   alias: {
     win: 'w',
@@ -23,17 +27,16 @@ const {
   watchViewsAndCompile
 } = require('./build/scripts/watch')
 
-gulp.task('compile:views', compileViews)
+gulp.task('compile:view', compileViews)
 gulp.task('compile:script', compileScripts)
 
 gulp.task('compile',
   gulp.series(
     initCompile,
-    // for not breaking Parcel's pretty console output ;)
-    'compile:views',
     gulp.parallel(
       syncPkgJson,
       composeEssentials,
+      'compile:view',
       'compile:script'
     )
   )
@@ -44,6 +47,6 @@ gulp.task('build', function initBuild () {
 })
 
 gulp.task('watch', function initWatch () {
-  watchViewsAndCompile(gulp.series('compile:views'))
+  watchViewsAndCompile(gulp.series('compile:view'))
   return watchSrcAndCompile(gulp.parallel('compile:script', composeEssentials))
 })

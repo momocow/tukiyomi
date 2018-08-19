@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "target": "es5",
+    "target": "es2018",
     "removeComments": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs"
   },
   "include": [
     "src/**/*"

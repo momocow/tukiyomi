@@ -3,21 +3,30 @@ const fs = require('fs-extra')
 const path = require('path')
 const srcmap = require('gulp-sourcemaps')
 const ts = require('gulp-typescript')
-const minify = require('gulp-uglify')
+const minify = require('gulp-uglify-es').default
 const { exec } = require('child_process')
-const Bundler = require('parcel-bundler')
+const { promisify } = require('util')
+const webpack = require('webpack')
 
 const COMPILE_DIR = path.join(global.ROOT_DIR, 'compiled')
 const SRC_DIR = path.join(global.ROOT_DIR, 'src')
-const COMPILED_VIEWS_DIR = path.join(COMPILE_DIR, 'views')
-const VIEWS_ENTRY = path.join(global.ROOT_DIR, 'views', 'index.html')
+const MAIN_DIR = path.join(SRC_DIR, 'main')
+const COMMON_DIR = path.join(SRC_DIR, 'common')
+
+const WEBPACK_CONF = require('../webpack.config')
 
 const SHOULD_SYNC = [
   'dependencies'
 ]
 
 const RESOURCES = [
-  'assets/icons'
+  'assets/icons',
+  {
+    // resolved from {ROOT_DIR}
+    from: 'src/view/index.html',
+    // resolved from {COMPILE_DIR}
+    to: 'view/index.html'
+  }
 ]
 
 // default to clean up all compiled
@@ -48,33 +57,63 @@ function dedupe () {
 
 function compileScripts () {
   let opt = fs.readJSONSync('./tsconfig.json').compilerOptions
-  return gulp.src([`${SRC_DIR}/**/*.ts`], { base: SRC_DIR })
+  const pipeline = gulp.src(
+    [
+      `${MAIN_DIR}/**/*.ts`,
+      `${COMMON_DIR}/**/*.ts`
+    ],
+    { base: SRC_DIR }
+  )
     .pipe(srcmap.init())
     .pipe(ts(opt))
-    .pipe(minify())
+
+  if (process.env.NODE_ENV !== 'development') {
+    pipeline.pipe(minify())
+  }
+
+  return pipeline
     .pipe(srcmap.write())
-    .pipe(gulp.dest(COMPILE_DIR))
+    .pipe(gulp.dest(COMPILE_DIR, {
+      overwrite: true
+    }))
 }
 
 function composeEssentials () {
   const promises = RESOURCES
     .map(p => {
-      return fs.copy(path.resolve(global.ROOT_DIR, p), path.resolve(COMPILE_DIR, p))
+      const src = typeof p === 'string' ? p : p.from
+      const dest = typeof p === 'string' ? p : p.to
+
+      return fs.copy(path.resolve(global.ROOT_DIR, src), path.resolve(COMPILE_DIR, dest))
     })
   return Promise.all(promises)
 }
 
 function compileViews () {
-  const bundler = new Bundler(VIEWS_ENTRY, {
-    outDir: COMPILED_VIEWS_DIR,
-    watch: false,
-    minify: true,
-    sourceMaps: true,
-    target: 'electron',
-    publicUrl: './'
-  })
+  const compiler = webpack(WEBPACK_CONF)
+  return promisify(compiler.run).call(compiler)
+    .catch(function (err) {
+      console.error(err.stack || err)
+      if (err.details) {
+        console.error(err.details)
+      }
+    })
+    .then(function (stats) {
+      console.info(stats.toString({
+        chunks: false,
+        colors: true
+      }))
 
-  return bundler.bundle()
+      if (stats.hasErrors()) {
+        throw new Error('Error occured during Webpack compilation.')
+      }
+
+      if (
+        (process.argv.includes('--strict') || process.env.NODE_ENV === 'production') &&
+        stats.hasWarnings()) {
+        throw new Error('There are still Webpack compilation warnings.')
+      }
+    })
 }
 
 module.exports = {

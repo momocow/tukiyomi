@@ -1,11 +1,11 @@
-import _get = require('lodash.get')
-import _set = require('lodash.set')
+import _get from 'lodash/get'
+import _set from 'lodash/set'
 
 import { EventEmitter } from 'events'
 
 import IService from './IService'
 
-export = class Config extends EventEmitter implements IService {
+export default class Config extends EventEmitter implements IService {
   public readonly service: string = 'config'
 
   private _namespace: string

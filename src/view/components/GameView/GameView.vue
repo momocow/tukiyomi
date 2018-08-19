@@ -6,7 +6,8 @@
 
 <script>
 import { remote } from 'electron'
-import { viewConf } from '../../scripts/globals'
+// import exported from '../../scripts/reference'
+
 export default {
   name: 'GameView',
   mounted () {
@@ -14,10 +15,7 @@ export default {
      * @type {{gameview: Electron.WebviewTag}}
      */
     const { gameview } = this.$refs
-    remote.getCurrentWebContents().on('dom-ready', function () {
-      // console.log(gameview, gameview.src)
-      gameview.loadURL(viewConf.get('entry-page', 'https://www.dmm.com/my/-/login/=/path=Sg9VTQFXDFdnFh5TUlgFWA0JUxk_'))
-    })
+    
   }
 }
 </script>
