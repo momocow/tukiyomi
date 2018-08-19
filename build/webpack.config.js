@@ -9,10 +9,7 @@ module.exports = {
   mode: process.env.NODE_ENV === 'development' ? 'development' : 'production',
   target: 'electron-renderer',
   devtool: process.env.NODE_ENV === 'development' ? 'inline-source-map' : undefined,
-  entry: [
-    './src/view/index',
-    './src/view/bootstrap.ts'
-  ],
+  entry: './src/view/index.ts',
   externals: [
     nodeExt(),
     // chroot to view directory
@@ -28,7 +25,7 @@ module.exports = {
   ],
   output: {
     path: resolve(__dirname, '../compiled/view'),
-    filename: 'main.js'
+    filename: 'index.js'
   },
   plugins: [
     new VueLoaderPlugin()

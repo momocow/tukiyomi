@@ -4,18 +4,27 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { remote } from 'electron'
-// import exported from '../../scripts/reference'
+import Vue from 'vue'
+import Component from 'vue-class-component'
 
-export default {
-  name: 'GameView',
+import ref from '../../../common/references'
+
+interface GameViewLoadingOption {
+  wait?: boolean
+}
+
+@Component({
+  name: 'GameView'
+})
+export default class GameView extends Vue {
+  $refs: { gameview: Electron.WebviewTag }
+
   mounted () {
-    /**
-     * @type {{gameview: Electron.WebviewTag}}
-     */
-    const { gameview } = this.$refs
-    
+    // register the webview reference
+    ref.namespace('dom')
+      .set('gameview', this.$refs.gameview, { readonly: true })
   }
 }
 </script>

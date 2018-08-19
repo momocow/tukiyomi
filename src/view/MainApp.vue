@@ -2,13 +2,17 @@
   <game-view></game-view>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+
 import GameView from './components/GameView'
 
-export default {
-  name: 'Main',
+@Component({
   components: {
     GameView
   }
+})
+export default class MainApp extends Vue {
 }
 </script>

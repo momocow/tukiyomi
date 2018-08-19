@@ -21,11 +21,11 @@ export default class Config extends EventEmitter implements IService {
   init (ipc: Electron.IpcRenderer) {
     this._ipc = ipc
 
-    ipc.on(`${this.service}:${this._namespace}`, (key: any, value: any) => {
+    this._ipc.on(`${this.service}:${this._namespace}`, (key: any, value: any) => {
       this._set(key, value)
     })
 
-    ipc.send(this.service, this._namespace)
+    this._ipc.send(this.service, this._namespace)
   }
 
   get (key: string, defaultVal?: any): any {
@@ -38,12 +38,13 @@ export default class Config extends EventEmitter implements IService {
     if (typeof key === 'string') {
       if (this.get(key) === value) return
 
+      const oldVal = this.get(key)
       _set(this._data, key, value)
+      this.emit('change', key, value, oldVal)
     } else {
       this._data = key
+      this.emit('load')
     }
-
-    this.emit('change', key, value)
   }
 
   set (key: string, value: any): void {

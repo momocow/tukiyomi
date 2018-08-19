@@ -30,6 +30,8 @@ const LEVELS = {
   SILENT: new LogLevel('SILENT', 50)
 }
 
+declare type LogLevelLabel = 'VERBOSE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'SILENT'
+
 export default class Logger implements IService {
   public readonly service: string = 'logger'
 
@@ -41,11 +43,19 @@ export default class Logger implements IService {
     this.name = name
   }
 
+  setLevel (label: LogLevelLabel) {
+    if (!LEVELS[label]) {
+      throw new Error(`Invalid log level: "${label}"`)
+    }
+
+    this.level = LEVELS[label]
+  }
+
   init (ipc: Electron.IpcRenderer) {
     this._ipc = ipc
   }
 
-  _log (level: LogLevel, msg: string, ...args) {
+  private _log (level: LogLevel, msg: string, ...args) {
     if (level < this.level) return
 
     msg = `[${new Date()}][${_padEnd(level.toString(), 7)}][${this.name}] ${msg}`

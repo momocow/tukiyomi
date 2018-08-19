@@ -5,7 +5,9 @@
     "removeComments": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "module": "commonjs"
+    // Change this to 'es6' once everything is going with Webpack
+    "module": "commonjs",
+    "experimentalDecorators": true
   },
   "include": [
     "src/**/*"

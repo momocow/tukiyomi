@@ -1,3 +1,5 @@
+import { EventEmitter } from 'events'
+
 interface RefDescriptor {
   readonly?: boolean
 }
@@ -8,39 +10,67 @@ class ReadonlyReferenceError extends Error {
   }
 }
 
-class RefRegistry extends Map<string, any> {
-  private _readonlyRefs: string[] = []
+class RefEntry {
+  constructor (
+    public value: any,
+    public options: RefDescriptor = { readonly: false }
+  ) {}
+}
+
+class RefRegistry extends EventEmitter {
+  private _storage: Map<string, RefEntry> = new Map()
 
   constructor (private _namespace: string) {
     super()
   }
 
-  set (key: string, val: any, options: RefDescriptor = { readonly: false }): this {
-    if (this._readonlyRefs.includes(key)) {
+  get (key: string): any {
+    const entry = this._storage.get(key)
+    return entry ? entry.value : undefined
+  }
+
+  set (key: string, val: any, options?: RefDescriptor): this {
+    let entry: RefEntry = this._storage.get(key)
+    if (entry && entry.options.readonly) {
       throw new ReadonlyReferenceError(this._namespace, key)
     }
 
-    if (options.readonly) {
-      this._readonlyRefs.push(key)
+    if (entry) {
+      const oldVal = entry.value
+      entry.value = val
+      this.emit('change', key, val, oldVal)
+    } else {
+      this._storage.set(key, new RefEntry(val, options))
+      this.emit('set', key, val)
     }
 
-    return super.set(key, val)
+    return this
   }
 }
 
 class LazyRefRegistry {
   constructor (
-    public namespace: string
+    private _namespace: string
   ) {
   }
 
+  private _getRegistry (): RefRegistry {
+    if (!refs[this._namespace]) {
+      refs[this._namespace] = new RefRegistry(this._namespace)
+    }
+    return refs[this._namespace]
+  }
+
+  on (event: string | symbol, listener: (...args: any[]) => void): RefRegistry {
+    return this._getRegistry().on(event, listener)
+  }
+
   get (key: string) {
-    return refs[this.namespace] ? refs[this.namespace].get(key) : undefined
+    return refs[this._namespace] ? refs[this._namespace].get(key) : undefined
   }
 
   set (key: string, val: any, options?: RefDescriptor): RefRegistry {
-    const registry = refs[this.namespace] || (refs[this.namespace] = new RefRegistry(this.namespace))
-    return registry.set(key, val, options)
+    return this._getRegistry().set(key, val, options)
   }
 }
 

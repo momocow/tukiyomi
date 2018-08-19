@@ -5,15 +5,38 @@ Yet another scalable KanColle Browser.
 
 ![WIP](https://thumbs.gfycat.com/SpicyImmenseGraywolf-size_restricted.gif)
 
-## 特色功能
-- [ ] 艦隊儀錶板
-- [ ] GIF戰鬥紀錄
-- [ ] 練度統計
+## 特色
+- 前端框架採用 [Vue](https://vuejs.org/) + [Typescript](https://www.typescriptlang.org)
+- GIF戰鬥紀錄
+- 作者是條牛 🐄
+
+
+## 文件
+🚪 [任意門](./docs/README.md)
 
 ## 開發者看板
 - 在新分支上進行任何修改
 - 主線 `master` 為最新版本
 - 請不要在分支 `deploy` 上直接 commit, 推送到這個分支會觸發建置&部屬
+- 勤寫文件 📝
+
+### 任務指令
+- `npm run compile`
+> 產生`/compiled`資料夾
+- `npm run compile:view`
+> (暫*1) 編譯 renderer process 檔案
+- `npm run compile:script`
+> (暫*1) 編譯 main process 檔案
+- `npm run dev`
+> `watch`模式, 初始化會先執行`compile`任務,此後一旦有原始碼存檔, 則會依照檔案所在資料夾執行`compile:script`或`compile:view`｡
+- `npm run build`
+> 產生`/dist`資料夾, 建置安裝檔及自動更新用之文件｡
+- `npm run release`
+> `compile` + `build`
+- `npm start`
+> 請先確認`/compiled`是否存在, 不存在則須先跑`compile`任務｡
+
+*1: 之後可以用一個webpack流程取代｡ [#1](https://github.com/momocow/tukiyomi/issues/1)
 
 ## 歡迎 PR 🙏
 
