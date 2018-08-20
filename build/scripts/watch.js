@@ -1,18 +1,18 @@
 const gulp = require('gulp')
 
-function watchViewsAndCompile (onChange) {
+function watchRendererAndCompile (onChange) {
   return gulp.watch([
-    'src/view/**/*'
+    'src/renderer/**/*'
   ], onChange)
 }
 
-function watchSrcAndCompile (onChange) {
+function watchMainAndCompile (onChange) {
   return gulp.watch([
-    'src/**/*'
+    'src/main/**/*'
   ], onChange)
 }
 
 module.exports = {
-  watchSrcAndCompile,
-  watchViewsAndCompile
+  watchMainAndCompile,
+  watchRendererAndCompile
 }

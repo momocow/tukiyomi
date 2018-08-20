@@ -2,7 +2,7 @@
   "name": "tukiyomi",
   "version": "0.0.0",
   "description": "Yet another scalable KanColle Viewer.",
-  "main": "./main/app.js",
+  "main": "./main/main.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/momocow/tukiyomi.git"

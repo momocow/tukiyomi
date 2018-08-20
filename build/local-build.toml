@@ -3,10 +3,10 @@ productName = "tukiyomi"
 artifactName = "tukiyomi-v${version}-local.${ext}"
 asar = true
 npmRebuild = true
-files = [
-  "**/*.js",
-  "../assets/icons/*.png"
-]
+# files = [
+#   "**/*.js",
+#   "../assets/icons/*.png"
+# ]
 
 [win]
 publish = [
@@ -49,4 +49,4 @@ icon = "assets/icons"
 maintainer = "MomoCow"
 
 [directories]
-app = "compiled"
+app = "dist"

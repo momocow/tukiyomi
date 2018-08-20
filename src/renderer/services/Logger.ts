@@ -1,5 +1,6 @@
 import IService from './IService'
 import { format } from 'util'
+import { ipcRenderer } from 'electron'
 
 import _padEnd from 'lodash/padend'
 
@@ -37,7 +38,6 @@ export default class Logger implements IService {
 
   public name: string
   public level: LogLevel = LEVELS.ERROR
-  private _ipc: Electron.IpcRenderer
 
   constructor (name: string) {
     this.name = name
@@ -51,16 +51,12 @@ export default class Logger implements IService {
     this.level = LEVELS[label]
   }
 
-  init (ipc: Electron.IpcRenderer) {
-    this._ipc = ipc
-  }
-
-  private _log (level: LogLevel, msg: string, ...args) {
+  private _log (level: LogLevel, msg: string, ...args: any[]) {
     if (level < this.level) return
 
     msg = `[${new Date()}][${_padEnd(level.toString(), 7)}][${this.name}] ${msg}`
 
-    let out: (msg: string, ...args)=>void
+    let out: (msg: string, ...args: any[])=>void
     switch (level) {
       case LEVELS.DEBUG:
         out = console.debug
@@ -78,26 +74,26 @@ export default class Logger implements IService {
         out = console.log
     }
     out(msg, ...args)
-    this._ipc.send(this.service, format(msg, ...args))
+    ipcRenderer.send(this.service, format(msg, ...args))
   }
 
-  verbose (msg: string, ...args) {
+  verbose (msg: string, ...args: any[]) {
     this._log(LEVELS.VERBOSE, msg, ...args)
   }
 
-  debug (msg: string, ...args) {
+  debug (msg: string, ...args: any[]) {
     this._log(LEVELS.DEBUG, msg, ...args)
   }
 
-  info (msg: string, ...args) {
+  info (msg: string, ...args: any[]) {
     this._log(LEVELS.INFO, msg, ...args)
   }
 
-  warn (msg: string, ...args) {
+  warn (msg: string, ...args: any[]) {
     this._log(LEVELS.WARN, msg, ...args)
   }
 
-  error (msg: string, ...args) {
+  error (msg: string, ...args: any[]) {
     this._log(LEVELS.ERROR, msg, ...args)
   }
 }

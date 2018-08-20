@@ -1,5 +1,6 @@
-import _get from 'lodash/get'
-import _set from 'lodash/set'
+import { get as _get, set as _set } from 'lodash-es'
+import { ipcRenderer } from 'electron'
+
 
 import { EventEmitter } from 'events'
 
@@ -10,22 +11,16 @@ export default class Config extends EventEmitter implements IService {
 
   private _namespace: string
   private _data = {}
-  private _ipc: Electron.IpcRenderer
 
   constructor (namespace: string) {
     super()
 
     this._namespace = namespace
-  }
 
-  init (ipc: Electron.IpcRenderer) {
-    this._ipc = ipc
-
-    this._ipc.on(`${this.service}:${this._namespace}`, (key: any, value: any) => {
+    ipcRenderer.on(`${this.service}:${this._namespace}`, (key: any, value: any) => {
       this._set(key, value)
     })
-
-    this._ipc.send(this.service, this._namespace)
+    ipcRenderer.send(this.service, this._namespace)
   }
 
   get (key: string, defaultVal?: any): any {

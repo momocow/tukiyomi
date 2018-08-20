@@ -1,3 +1,9 @@
 module.exports = {
-    "extends": "standard"
+    extends: [
+      'standard',
+      'plugin:vue/essential'
+    ],
+    plugins: [
+      'html'
+    ]
 };

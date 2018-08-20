@@ -1,15 +1,3 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "target": "es2018",
-    "removeComments": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    // Change this to 'es6' once everything is going with Webpack
-    "module": "commonjs",
-    "experimentalDecorators": true
-  },
-  "include": [
-    "src/**/*"
-  ]
+  "extends": "./node_modules/electron-webpack/tsconfig-base.json"
 }

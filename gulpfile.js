@@ -5,7 +5,11 @@ global.ROOT_DIR = __dirname
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development'
+  process.env.production = false
+} else {
+  process.env.production = true
 }
+process.env.production = true
 
 const ARGS = mri(process.argv.slice(2), {
   alias: {
@@ -19,16 +23,16 @@ const {
   initCompile,
   syncPkgJson,
   composeEssentials,
-  compileScripts,
-  compileViews
+  compileMain,
+  compileRenderer
 } = require('./build/scripts/compile')
 const {
-  watchSrcAndCompile,
-  watchViewsAndCompile
+  watchMainAndCompile,
+  watchRendererAndCompile
 } = require('./build/scripts/watch')
 
-gulp.task('compile:view', compileViews)
-gulp.task('compile:script', compileScripts)
+gulp.task('compile:main', compileMain)
+gulp.task('compile:renderer', compileRenderer)
 
 gulp.task('compile',
   gulp.series(
@@ -36,8 +40,8 @@ gulp.task('compile',
     gulp.parallel(
       syncPkgJson,
       composeEssentials,
-      'compile:view',
-      'compile:script'
+      'compile:renderer',
+      'compile:main'
     )
   )
 )
@@ -47,6 +51,6 @@ gulp.task('build', function initBuild () {
 })
 
 gulp.task('watch', function initWatch () {
-  watchViewsAndCompile(gulp.series('compile:view'))
-  return watchSrcAndCompile(gulp.parallel('compile:script', composeEssentials))
+  watchRendererAndCompile(gulp.series('compile:renderer'))
+  return watchMainAndCompile(gulp.series('compile:script'))
 })

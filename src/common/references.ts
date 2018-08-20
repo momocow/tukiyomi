@@ -30,7 +30,7 @@ class RefRegistry extends EventEmitter {
   }
 
   set (key: string, val: any, options?: RefDescriptor): this {
-    let entry: RefEntry = this._storage.get(key)
+    let entry: RefEntry | undefined = this._storage.get(key)
     if (entry && entry.options.readonly) {
       throw new ReadonlyReferenceError(this._namespace, key)
     }

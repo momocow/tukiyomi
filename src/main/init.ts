@@ -7,4 +7,4 @@ if (!IS_DEV) {
 
 export const ROOT_DIR = path.dirname(__dirname)
 export const VIEW_DIR = path.join(ROOT_DIR, 'view')
-export const VIEW_ENTRY = path.join(VIEW_DIR, 'index.html')
+export const VIEW_ENTRY = path.join(ROOT_DIR, 'index.html')
