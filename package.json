@@ -2,12 +2,11 @@
   "name": "tukiyomi",
   "version": "0.0.0",
   "description": "Yet another scalable KanColle Viewer.",
-  "main": "dist/main/main.js",
+  "main": "dist",
   "scripts": {
-    "start": "electron index.js",
-    "dev": "gulp compile && gulp watch",
+    "start": "electron .",
+    "dev": "electron-webpack dev",
     "compile": "gulp compile",
-    "compile:electron": "electron-webpack --",
     "build": "gulp build",
     "release": "gulp compile && gulp build",
     "test": "echo No tests yet. Pass it!"
@@ -27,7 +26,7 @@
   },
   "homepage": "https://github.com/momocow/tukiyomi#readme",
   "devDependencies": {
-    "@types/lodash-es": "^4.17.1",
+    "@types/lodash": "^4.14.116",
     "@vue/component-compiler-utils": "^2.2.0",
     "electron": "^2.0.7",
     "electron-builder": "^20.28.1",
@@ -46,9 +45,6 @@
     "file-loader": "^1.1.11",
     "fs-extra": "^7.0.0",
     "gulp": "^4.0.0",
-    "gulp-sourcemaps": "^2.6.4",
-    "gulp-typescript": "^5.0.0-alpha.3",
-    "gulp-uglify-es": "^1.0.4",
     "html-loader": "^0.5.5",
     "mri": "^1.1.1",
     "toml": "^2.3.3",
@@ -60,8 +56,9 @@
     "webpack": "^4.16.5"
   },
   "dependencies": {
+    "@grass/grass-logger": "file:vendors/grass-logger",
     "http-proxy": "^1.17.0",
-    "lodash-es": "^4.17.10",
+    "lodash": "^4.17.10",
     "vue": "^2.5.17",
     "vue-class-component": "^6.2.0"
   }

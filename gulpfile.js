@@ -9,7 +9,6 @@ if (!process.env.NODE_ENV) {
 } else {
   process.env.production = true
 }
-process.env.production = true
 
 const ARGS = mri(process.argv.slice(2), {
   alias: {
@@ -40,8 +39,8 @@ gulp.task('compile',
     gulp.parallel(
       syncPkgJson,
       composeEssentials,
-      'compile:renderer',
-      'compile:main'
+      'compile:main',
+      'compile:renderer'
     )
   )
 )

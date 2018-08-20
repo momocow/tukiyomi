@@ -8,7 +8,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 
-import ref from '../../../common/references'
+import ref from 'common/references'
 
 @Component({
   name: 'GameView'
@@ -21,3 +21,11 @@ export default class GameView extends Vue {
   }
 }
 </script>
+
+<style>
+  .gameview, .gameview>webview {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+

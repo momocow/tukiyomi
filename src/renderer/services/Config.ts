@@ -1,4 +1,4 @@
-import { get as _get, set as _set } from 'lodash-es'
+import { get as _get, set as _set } from 'lodash'
 import { ipcRenderer } from 'electron'
 
 

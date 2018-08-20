@@ -24,6 +24,24 @@ class RefRegistry extends EventEmitter {
     super()
   }
 
+  ensure (key: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.has(key)) {
+        resolve(this.get(key))
+      } else {
+        this.on('set', (_key: string | "gameview", gameview: Electron.WebviewTag) => {
+          if (_key === key) {
+            resolve(this.get(key))
+          }
+        })
+      }
+    })
+  }
+
+  has (key: string): boolean {
+    return this._storage.has(key)
+  }
+
   get (key: string): any {
     const entry = this._storage.get(key)
     return entry ? entry.value : undefined
@@ -61,8 +79,16 @@ class LazyRefRegistry {
     return refs[this._namespace]
   }
 
+  ensure (key: string): Promise<any> {
+    return this._getRegistry().ensure(key)
+  }
+
   on (event: string | symbol, listener: (...args: any[]) => void): RefRegistry {
     return this._getRegistry().on(event, listener)
+  }
+
+  has (key: string): boolean {
+    return refs[this._namespace] ? refs[this._namespace].has(key) : false
   }
 
   get (key: string) {

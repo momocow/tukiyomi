@@ -1,0 +1,1 @@
+export const KANCOLLE_URL = 'https://www.dmm.com/my/-/login/=/path=Sg9VTQFXDFdnFh5TUlgFWA0JUxk_'

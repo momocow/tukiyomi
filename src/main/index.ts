@@ -9,7 +9,13 @@ function createWindow () {
     webPreferences: {
     }
   })
-  window.loadFile(VIEW_ENTRY)
+
+  if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
+    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
+  } else {
+    window.loadURL(VIEW_ENTRY)
+  }
+
   window.webContents.on('did-finish-load', function () {
     if (IS_DEV) {
       window.webContents.openDevTools({
