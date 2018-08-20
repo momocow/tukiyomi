@@ -1,43 +1,42 @@
-const nodeExt = require('webpack-node-externals')
+// const nodeExt = require('webpack-node-externals')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
-const { resolve, relative } = require('path')
-
-const VIEW_DIR = resolve(__dirname, '../src/view')
+const { resolve } = require('path')
 
 module.exports = {
   mode: process.env.NODE_ENV === 'development' ? 'development' : 'production',
   target: 'electron-renderer',
   devtool: process.env.NODE_ENV === 'development' ? 'inline-source-map' : undefined,
-  entry: './src/view/index.ts',
-  externals: [
-    nodeExt(),
-    // chroot to view directory
-    function (context, request, callback) {
-      if (request.startsWith('.')) {
-        const rel = relative(VIEW_DIR, resolve(context, request))
-        if (rel.startsWith('..')) {
-          return callback(null, 'commonjs ' + request)
-        }
-      }
-      callback()
-    }
-  ],
+  entry: {
+    index: './src/view/index.ts',
+    app: './src/main/app.ts'
+  },
+  // externals: [
+  //   nodeExt()
+  // ],
   output: {
-    path: resolve(__dirname, '../compiled/view'),
-    filename: 'index.js'
+    path: resolve(__dirname, '../compiled'),
+    filename: '[name].js'
   },
   plugins: [
     new VueLoaderPlugin()
   ],
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 2,
+      maxAsyncRequests: 2
+    }
+  },
   module: {
     rules: [{
-      test: /\.tsx?$/,
-      use: 'ts-loader',
-      exclude: /node_modules/
-    }, {
       test: /\.vue$/,
       loader: 'vue-loader'
+    }, {
+      test: /\.tsx?$/,
+      loader: 'ts-loader',
+      exclude: /node_modules/,
+      options: { appendTsSuffixTo: [/\.vue$/] }
     }, {
       test: /\.(png|jpg|gif)$/i,
       use: [
