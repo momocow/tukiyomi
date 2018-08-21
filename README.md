@@ -57,21 +57,21 @@ npm run build
 
 ### 任務指令
 - `npm run compile`
-> 產生`/compiled`資料夾
-- `npm run compile:view`
+> 編譯結果`/dist`
+- `npm run compile:renderer`
 > (暫*1) 編譯 renderer process 檔案
-- `npm run compile:script`
+- `npm run compile:main`
 > (暫*1) 編譯 main process 檔案
 - `npm run dev`
-> `watch`模式, 初始化會先執行`compile`任務,此後一旦有原始碼存檔, 則會依照檔案所在資料夾執行`compile:script`或`compile:view`｡
+> `watch`模式, 使用`electron-webpack dev`, 將執行具有live reload功能(主程序或渲染程序皆支援)之electron應用｡
 - `npm run build`
-> 產生`/dist`資料夾, 建置安裝檔及自動更新用之文件｡
+> 建置結果`/dist`, 建置安裝檔及自動更新用之文件｡
 - `npm run release`
 > `compile` + `build`
 - `npm start`
 > 請先確認`/compiled`是否存在, 不存在則須先跑`compile`任務｡
 
-*1: 之後可以用一個webpack流程取代｡ [#1](https://github.com/momocow/tukiyomi/issues/1)
+*1: 編譯結果尚須優化 [#1](https://github.com/momocow/tukiyomi/issues/1)
 
 ## 歡迎 PR 🙏
 

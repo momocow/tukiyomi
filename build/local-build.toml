@@ -1,12 +1,10 @@
+# extends = 'build/build.base.toml'
+
 appId = "me.momocow.tukiyomi"
 productName = "tukiyomi"
 artifactName = "tukiyomi-v${version}-local.${ext}"
 asar = true
 npmRebuild = true
-files = [
-  "**/*.js",
-  "../assets/icons/*.png"
-]
 
 [win]
 publish = [
@@ -47,6 +45,3 @@ target = [
 ]
 icon = "assets/icons"
 maintainer = "MomoCow"
-
-[directories]
-app = "dist"

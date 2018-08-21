@@ -57,8 +57,10 @@
   },
   "dependencies": {
     "@grass/grass-logger": "file:vendors/grass-logger",
+    "@sentry/electron": "^0.8.1",
     "http-proxy": "^1.17.0",
     "lodash": "^4.17.10",
+    "source-map-support": "^0.5.9",
     "vue": "^2.5.17",
     "vue-class-component": "^6.2.0"
   }

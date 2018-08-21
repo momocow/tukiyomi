@@ -9,9 +9,20 @@ const WEBPACK_RENDERER_CONF = require('electron-webpack/webpack.renderer.config'
 
 const TARGET_DIR = path.join(global.ROOT_DIR, 'dist')
 
-const SHOULD_SYNC = [
-  'dependencies'
-]
+const SHOULD_SYNC = {
+  dependencies: function (val) {
+    if (typeof val ==='object') {
+      Object.keys(val)
+        .forEach(k => {
+          if (val[k].startsWith('file:')) {
+            const abs = path.resolve(global.ROOT_DIR, val[k].substr(5))
+            val[k] = 'file:' + path.relative(TARGET_DIR, abs)
+          }
+        })
+    }
+    return val
+  }
+}
 
 const RESOURCES = [
   'assets/icons/*'
@@ -29,7 +40,9 @@ function initCompile () {
 function syncPkgJson () {
   const DEV_PKG = require(path.join(global.ROOT_DIR, 'package.json'))
   const PROD_PKG = require(path.join(global.ROOT_DIR, 'assets', 'prod-package.json'))
-  SHOULD_SYNC.forEach(p => (PROD_PKG[p] = DEV_PKG[p]))
+  Object.keys(SHOULD_SYNC)
+    .forEach(p => (PROD_PKG[p] = typeof SHOULD_SYNC[p] === 'function' ? SHOULD_SYNC[p](DEV_PKG[p]) : DEV_PKG[p]))
+
   return fs.outputJSON(path.join(TARGET_DIR, 'package.json'), PROD_PKG, {
     spaces: 2
   })

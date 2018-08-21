@@ -24,16 +24,27 @@ class RefRegistry extends EventEmitter {
     super()
   }
 
-  ensure (key: string): Promise<any> {
+  wait (key: string, timeout: number = Infinity): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.has(key)) {
         resolve(this.get(key))
       } else {
-        this.on('set', (_key: string | "gameview", gameview: Electron.WebviewTag) => {
+        let ticket: NodeJS.Timer | undefined
+        this.once('join', (_key: string) => {
           if (_key === key) {
             resolve(this.get(key))
+            if (ticket) {
+              clearTimeout(ticket)
+            }
           }
         })
+        
+        timeout = Math.abs(timeout)
+        if (timeout < Infinity) {
+          ticket = setTimeout(() => {
+            reject(new Error(`"${key}" has never shown up before timeout.`))
+          }, timeout)
+        }
       }
     })
   }
@@ -59,7 +70,7 @@ class RefRegistry extends EventEmitter {
       this.emit('change', key, val, oldVal)
     } else {
       this._storage.set(key, new RefEntry(val, options))
-      this.emit('set', key, val)
+      this.emit('join', key, val)
     }
 
     return this
@@ -79,8 +90,8 @@ class LazyRefRegistry {
     return refs[this._namespace]
   }
 
-  ensure (key: string): Promise<any> {
-    return this._getRegistry().ensure(key)
+  wait (key: string): Promise<any> {
+    return this._getRegistry().wait(key)
   }
 
   on (event: string | symbol, listener: (...args: any[]) => void): RefRegistry {
@@ -113,6 +124,7 @@ class GlobalRefRegistry extends RefRegistry {
 const refs: {[namespace: string]: RefRegistry} = {}
 
 /**
+ * Singleton
  * It's for global reference purpose.
  * Use it with memory awareness since there are Maps under the hood,
  * references should be cleaned up manually if it is no longer needed.

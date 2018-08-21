@@ -8,7 +8,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 
-import ref from 'common/references'
+import ref from '../../../common/refdb'
 
 @Component({
   name: 'GameView'

@@ -1,9 +1,10 @@
-import { VIEW_ENTRY, IS_DEV } from './init'
+import { IS_DEV } from './init'
 
 import { app, BrowserWindow } from 'electron'
+import './ipc'
 
 function createWindow () {
-  const window: BrowserWindow = new BrowserWindow({
+  let window: BrowserWindow | null = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -13,16 +14,21 @@ function createWindow () {
   if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
     window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
   } else {
-    window.loadURL(VIEW_ENTRY)
+    window.loadFile('index.html')
   }
 
-  window.webContents.on('did-finish-load', function () {
-    if (IS_DEV) {
-      window.webContents.openDevTools({
-        mode: "undocked"
-      })
-    }
+  if (IS_DEV) {
+    window.webContents.openDevTools({
+      mode: "undocked"
+    })
+  }
+
+  window.on('closed', () => {
+    window = null
   })
 }
 
 app.on('ready', createWindow)
+app.on('window-all-closed', () => {
+  app.quit()
+})

@@ -1,8 +1,9 @@
-# Reference Registry
+# Reference Registry / Reference Database
 In order to avoid using global variables like `window` and `global`, use reference registries to perform variable management, including life time and access control, based on namespaces. 
 
 ## Reference Table
 ### Main Process
+#### Namespace `__GLOBAL__`
 ### Renderer Process
 #### Namespace `__GLOBAL__`
 - `logger` Logger

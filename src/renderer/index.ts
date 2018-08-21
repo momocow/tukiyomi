@@ -4,7 +4,7 @@ import Vue from 'vue'
 
 import MainApp from './MainApp.vue'
 
-import ref from '../common/references'
+import ref from '../common/refdb'
 
 import Logger from './services/Logger'
 import Config from './services/Config'
@@ -41,7 +41,7 @@ config.on('load', function () {
 ref.set('config', config, { readonly: true })
 
 remote.getCurrentWebContents().on('dom-ready', async function () {
-  const gameview: Electron.WebviewTag = await ref.namespace('dom').ensure('gameview')
+  const gameview: Electron.WebviewTag = await ref.namespace('dom').wait('gameview')
   gameview.addEventListener('dom-ready', function loadGame () {
     gameview.loadURL(KANCOLLE_URL)
     // once
