@@ -1,3 +1,8 @@
+/****************************************
+ * Environment Detection,
+ * data that never change during runtime
+ ****************************************/
+
 import fs from 'fs'
 
 import safeCall from '../common/safe'

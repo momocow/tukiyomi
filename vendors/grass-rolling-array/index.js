@@ -99,4 +99,4 @@ class RollingArray extends Array {
   }
 }
 
-module.exports.default = RollingArray
+module.exports = RollingArray

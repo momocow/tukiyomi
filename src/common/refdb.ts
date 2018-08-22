@@ -17,7 +17,7 @@ class RefEntry {
   ) {}
 }
 
-class RefRegistry extends EventEmitter {
+export class RefRegistry extends EventEmitter {
   private _storage: Map<string, RefEntry> = new Map()
 
   constructor (private _namespace: string) {
@@ -39,7 +39,6 @@ class RefRegistry extends EventEmitter {
           }
         })
         
-        timeout = Math.abs(timeout)
         if (timeout < Infinity) {
           ticket = setTimeout(() => {
             reject(new Error(`"${key}" has never shown up before timeout.`))
@@ -111,7 +110,7 @@ class LazyRefRegistry {
   }
 }
 
-class GlobalRefRegistry extends RefRegistry {
+export class GlobalRefRegistry extends RefRegistry {
   constructor () {
     super('__GLOBAL__')
   }

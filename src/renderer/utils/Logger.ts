@@ -1,8 +1,13 @@
 import IService from './IService'
 import { format } from 'util'
-import { ipcRenderer } from 'electron'
 
-import _padEnd from 'lodash/padend'
+import { command } from '../ipc'
+
+import { LOG_ENTRY_TPL } from '../../common/config'
+
+// pre-compile
+const template = LOG_ENTRY_TPL
+  .replace('{process}', 'RENDER')
 
 class LogLevel {
   public name: string
@@ -37,7 +42,7 @@ export default class Logger implements IService {
   public readonly service: string = 'logger'
 
   public name: string
-  public level: LogLevel = LEVELS.ERROR
+  public level: LogLevel = LEVELS.WARN
 
   constructor (name: string) {
     this.name = name
@@ -54,7 +59,11 @@ export default class Logger implements IService {
   private _log (level: LogLevel, msg: string, ...args: any[]) {
     if (level < this.level) return
 
-    msg = `[${new Date()}][${_padEnd(level.toString(), 7)}][${this.name}] ${msg}`
+    msg = template
+      .replace('{time}', new Date().toISOString())
+      .replace('{level}', level.toString().padEnd(5))
+      .replace('{name}', this.name)
+      .replace('{message}', msg)
 
     let out: (msg: string, ...args: any[])=>void
     switch (level) {
@@ -74,11 +83,7 @@ export default class Logger implements IService {
         out = console.log
     }
     out(msg, ...args)
-    ipcRenderer.send(this.service, format(msg, ...args))
-  }
-
-  verbose (msg: string, ...args: any[]) {
-    this._log(LEVELS.VERBOSE, msg, ...args)
+    command(this.service, format(msg, ...args))
   }
 
   debug (msg: string, ...args: any[]) {

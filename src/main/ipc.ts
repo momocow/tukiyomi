@@ -2,14 +2,18 @@ import { ipcMain } from 'electron'
 
 /**
  * A service should come with a response
+ * Default to async service if response modifier (":sync", ":async") is omitted
  */
-export function registerService (eventname: string, listener: Function): void {
+export function registerService (svc: string, listener: Function): void {
   ipcMain
-    .on(eventname + ':sync', (evt: any, ...args: any[]) => {
-      evt.returnValue = listener(...args)
+    .on(`svc:${svc}:sync`, (evt: any, { args }: TukiyomiService.ServiceRequestPacket) => {
+      evt.returnValue = { data: listener(...args) }
     })
-    .on(eventname + ':async', (evt: any, ...args: any[]) => {
-      evt.sender.send(eventname + ':response', listener(...args))
+    .on(`svc:${svc}:async`, (evt: any, { meta, args }: TukiyomiService.AsyncServiceRequestPacket) => {
+      evt.sender.send(`svc:response`, { meta, data: listener(...args) })
+    })
+    .on(`svc:${svc}`, (evt: any, { meta, args }: TukiyomiService.AsyncServiceRequestPacket) => {
+      evt.sender.send(`svc:response`, { meta, data: listener(...args) })
     })
 }
 
@@ -17,7 +21,7 @@ export function registerService (eventname: string, listener: Function): void {
  * A command won't have any responses
  */
 export function registerCommand (eventname: string, listener: Function): void {
-  ipcMain.on(eventname, (...args: any[]) => {
+  ipcMain.on(`cmd:${eventname}`, (evt: any, ...args: any[]) => {
     listener(...args)
   })
 }

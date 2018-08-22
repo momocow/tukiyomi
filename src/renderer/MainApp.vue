@@ -9,6 +9,7 @@ import Component from 'vue-class-component'
 import GameView from './components/GameView'
 
 @Component({
+  name: 'MainApp',
   components: {
     GameView
   }

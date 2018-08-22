@@ -6,8 +6,6 @@ In order to avoid using global variables like `window` and `global`, use referen
 #### Namespace `__GLOBAL__`
 ### Renderer Process
 #### Namespace `__GLOBAL__`
-- `logger` Logger
-- `config` Config
 - `i18n` I18n
 
 #### Namespace `dom`

@@ -1,40 +1,73 @@
-import { appendFile, appendFileSync } from 'fs-extra'
+import { appendFile, appendFileSync, ensureFile, ensureFileSync } from 'fs-extra'
 import { app } from 'electron'
-import { join } from 'path'
+import { resolve } from 'path'
 import RollingArray from '@grass/grass-rolling-array'
 import Logger from '@grass/grass-logger'
 
+import { logRotate, logRotateSync } from './log-rotate'
+
 import { MAX_LOGGING_BUF_LEN } from '../../common/config'
 
+class Timestamp {
+  public time: Date
+
+  constructor (public label: string) {
+    this.time = new Date()
+  }
+
+  toString () {
+    return `@${this.label} ${this.time.toISOString()}`
+  }
+}
+
 export default class LogPool {
-  private _pool: RollingArray<string> = new RollingArray<string>(MAX_LOGGING_BUF_LEN, MAX_LOGGING_BUF_LEN)
+  private _pool: RollingArray<string|Timestamp> = new RollingArray<string|Timestamp>(MAX_LOGGING_BUF_LEN, MAX_LOGGING_BUF_LEN)
   private _onLog: (txt: string) => void = (txt) => {
     this._pool.push(txt)
   }
 
   constructor (public logfile: string) {
-    this._pool.on('overflow', (victims) => {
-      appendFile(
-        join(app.getPath('logs'), this.logfile),
-        victims.join('\n')
+    this._pool.on('overflow', async (victims: (string|Timestamp)[]) => {
+      const absPath = resolve(app.getPath('logs'), this.logfile)
+      await ensureFile(absPath)
+      await logRotate(absPath)
+      return appendFile(
+        absPath,
+        victims
+          .map(e => e.toString())
+          .join('\n') + '\n'
       )
     })
   }
 
   async flush () {
     if (this._pool.length > 0) {
+      const absPath = resolve(app.getPath('logs'), this.logfile)
+      await ensureFile(absPath)
+      await logRotate(absPath)
       await appendFile(
-        join(app.getPath('logs'), this.logfile),
-        this._pool.splice(0, this._pool.length).join('\n')
+        absPath,
+        this._pool
+          .splice(0, this._pool.length)
+          .map(e => e.toString())
+          .join('\n') + '\n'
       )
     }
   }
 
   flushSync () {
+    console.log('flushing')
     if (this._pool.length > 0) {
+      const absPath = resolve(app.getPath('logs'), this.logfile)
+      console.log(absPath)
+      ensureFileSync(absPath)
+      logRotateSync(absPath)
       appendFileSync(
-        join(app.getPath('logs'), this.logfile),
-        this._pool.splice(0, this._pool.length).join('\n')
+        absPath,
+        this._pool
+          .splice(0, this._pool.length)
+          .map(e => e.toString())
+          .join('\n') + '\n'
       )
     }
   }
@@ -46,5 +79,13 @@ export default class LogPool {
 
   disassociate (logger: Logger) {
     logger.removeListener('log', this._onLog)
+  }
+
+  push (txt: string) {
+    this._pool.push(txt)
+  }
+
+  timestamp (label: string = '') {
+    this._pool.push(new Timestamp(label))
   }
 }

@@ -1,22 +1,23 @@
 import Logger from '@grass/grass-logger'
-import { app } from 'electron'
 
 import { IS_DEV } from '../env'
+import { MAIN_LOGGER_NAME, LOG_ENTRY_TPL } from '../../common/config'
 
 import LogPool from './LogPool'
 
-const appPool = new LogPool('app.log')
-const gamePool = new LogPool('game.log')
-
-app.on('will-quit', function () {
-  appPool.flushSync()
-  gamePool.flushSync()
-})
+export const appPool = new LogPool('app.log')
+export const gamePool = new LogPool('game.log')
 
 function getGameLogger () {
   const logger = new Logger('game')
   logger.setLevel('ALL')
   logger.template = '[{time}] {message}'
+  logger.renderer = function (entry) {
+    return {
+      ...entry,
+      time: entry.time.toISOString(),
+    }
+  }
   gamePool.associate(logger)
   return logger
 }
@@ -24,11 +25,13 @@ function getGameLogger () {
 export function getLogger (name: string): Logger {
   const logger = new Logger(name)
   logger.setLevel(IS_DEV ? 'ALL' : 'WARN')
-  logger.template = '[{time}][{level}][{name}] {message}'
+  logger.template = LOG_ENTRY_TPL
   logger.renderer = function (entry) {
     return {
       ...entry,
-      level: entry.level.toString().padEnd(5)
+      time: entry.time.toISOString(),
+      level: entry.level.toString().padEnd(5),
+      process: 'MAIN  '
     }
   }
   appPool.associate(logger)
@@ -36,5 +39,4 @@ export function getLogger (name: string): Logger {
 }
 
 export const gameLogger = getGameLogger()
-export const rendererLogger = getLogger('core:renderer')
-export const mainLogger = getLogger('core:renderer')
+export const mainLogger = getLogger(MAIN_LOGGER_NAME)
