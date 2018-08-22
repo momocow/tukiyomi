@@ -1,0 +1,23 @@
+body {
+  overflow: hidden;
+}
+
+.tukiyomi-dimmer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99;
+  background-color: rgba(40,40,40,0.8);
+}
+
+#main-my.page-login .area-login>.sect {
+  position: fixed !important;
+  z-index: 100;
+  width: 700px;
+  height: 360px;
+  top: calc((100vh - 360px)/2);
+  left: calc((100vw - 700px)/2);
+  margin-top: 0 !important;
+}

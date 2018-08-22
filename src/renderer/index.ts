@@ -1,4 +1,4 @@
-import './assets/index.css'
+import './assets/styles/index.css'
 
 import { mainLogger } from './logging/loggers'
 mainLogger.info('Start initailization')

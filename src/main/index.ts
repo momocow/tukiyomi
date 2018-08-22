@@ -30,6 +30,8 @@ function createWindow () {
     }
   })
 
+  window.setMenu(null)
+
   if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
     window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
   } else {

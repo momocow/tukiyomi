@@ -1,0 +1,7 @@
+#game_frame {
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 1200px !important;
+  position: fixed;
+}

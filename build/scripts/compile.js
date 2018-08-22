@@ -11,7 +11,7 @@ const TARGET_DIR = path.join(global.ROOT_DIR, 'dist')
 
 const SHOULD_SYNC = {
   dependencies: function (val) {
-    if (typeof val ==='object') {
+    if (typeof val === 'object') {
       Object.keys(val)
         .forEach(k => {
           if (val[k].startsWith('file:')) {
