@@ -1,7 +1,8 @@
-import { IS_DEV } from './init'
+import './init'
 
 import { app, BrowserWindow } from 'electron'
-import './ipc'
+
+import { IS_DEV } from './env'
 
 function createWindow () {
   let window: BrowserWindow | null = new BrowserWindow({
