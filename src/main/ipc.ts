@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, webContents } from 'electron'
 
 /**
  * A service should come with a response
@@ -26,3 +26,8 @@ export function registerCommand (eventname: string, listener: Function): void {
   })
 }
 
+export function publish (topic: string, ...args: any[]) {
+  webContents.getAllWebContents().forEach((wc: Electron.webContents) => {
+    wc.send(`evt:${topic}`, ...args)
+  })
+}

@@ -21,6 +21,7 @@
 import { app, BrowserWindow } from 'electron'
 
 import { IS_DEV } from './env'
+import { publish } from './ipc'
 
 function createWindow () {
   let window: BrowserWindow | null = new BrowserWindow({
@@ -43,6 +44,13 @@ function createWindow () {
       mode: "undocked"
     })
   }
+
+  window.on('resize', function () {
+    if (window) {
+      const [ width, height ] = window.getSize()
+      publish('window-resize', width, height)
+    }
+  })
 
   window.on('closed', () => {
     window = null

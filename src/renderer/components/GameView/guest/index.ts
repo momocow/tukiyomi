@@ -1,3 +1,8 @@
+interface GuestRunOptions {
+  timeout?: number,
+  useGesture?: boolean
+}
+
 class GuestContent {
   constructor (public webContent: Electron.WebviewTag | Electron.webContents) {
 
@@ -6,21 +11,34 @@ class GuestContent {
   /**
    * `fn` will be stringified and execute in the guest page.
    */
-  run (fn: Function, useGesture?: boolean, options: { timeout: number } = { timeout: Infinity }) {
+  run (fn: Function): Promise<any>
+  run (fn: Function, args: any[]): Promise<any>
+  run (fn: Function, options: GuestRunOptions): Promise<any>
+  run (fn: Function, args: any[], options: GuestRunOptions): Promise<any>
+  run (fn: Function, args?: any[] | GuestRunOptions, options?: GuestRunOptions) {
+    const _args: any[] = !Array.isArray(args) ? [] : args
+    const _options: GuestRunOptions = args && !Array.isArray(args) ? args
+      : { timeout: Infinity, useGesture: false }
+
     return new Promise((resolve, reject) => {
       let timer: NodeJS.Timer | undefined
+      let paramStr: string = _args.map(e => JSON.stringify(e)).join(',')
 
-      this.webContent.executeJavaScript(`(${fn.toString()})();`, useGesture, (result: any) => {
-        resolve(result)
-        if (timer) {
-          clearTimeout(timer)
+      this.webContent.executeJavaScript(
+        `(${fn.toString()})(${paramStr});`,
+        _options.useGesture,
+        (result: any) => {
+          resolve(result)
+          if (timer) {
+            clearTimeout(timer)
+          }
         }
-      })
+      )
 
-      if (options && options.timeout < Infinity) {
+      if (typeof _options.timeout === 'number' && _options.timeout < Infinity) {
         timer = setTimeout(() => {
           reject(new Error('Guest javascript execution timeout'))
-        }, options.timeout)
+        }, _options.timeout)
       }
     })
   }

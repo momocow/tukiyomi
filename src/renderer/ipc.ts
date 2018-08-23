@@ -57,3 +57,15 @@ export function serviceSync (svc: string, ...args: any[]) {
 export function command (command: string, ...args: any[]) {
   ipcRenderer.send(`cmd:${command}`, ...args)
 }
+
+export function subscribe (topic: string, listener: Function) {
+  ipcRenderer.on(`evt:${topic}`, listener)
+}
+
+export function unsubscribe (topic: string, listener?: Function) {
+  if (listener) {
+    ipcRenderer.removeListener(`evt:${topic}`, listener)
+  } else {
+    ipcRenderer.removeAllListeners(`evt:${topic}`)
+  }
+}

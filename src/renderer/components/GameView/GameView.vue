@@ -14,11 +14,7 @@ import { join } from 'path'
 import { mainLogger } from '../../logging/loggers'
 import { IS_DEV } from '../../env'
 
-import onPageLoaded from './page-loaded'
-
-// const SCRIPT_ADD_DIMMER = require('!!raw-loader!../../assets/guest/login/add-dimmer.js')
-// const SCRIPT_DMM_COOKIE = require('!!raw-loader!../../assets/guest/login/dmm-cookie.js')
-// const SCRIPT_GAME_LAYOUT = require('!!raw-loader!../../assets/guest/game/game-layout.js')
+import onPageLoaded from './pageLoaded'
 
 import { KANCOLLE_URL } from '../../../common/config'
 
