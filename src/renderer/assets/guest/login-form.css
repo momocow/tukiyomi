@@ -12,7 +12,7 @@ body {
   background-color: rgba(40,40,40,0.8);
 }
 
-#main-my.page-login .area-login>.sect {
+#main-my.page-login .area-login>.sect.tukiyomi-login-enhance {
   position: fixed !important;
   z-index: 100;
   width: 700px;
