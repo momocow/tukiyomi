@@ -1,4 +1,4 @@
-export function alignGameLayout () {
+export default function alignGameLayout () {
   window.scrollTo(0, 0)
 
   handleSpacingTop(false)
@@ -34,8 +34,4 @@ export function alignGameLayout () {
     }
     t(0)
   }
-}
-
-export function resizeGameView (width: number) {
-  // webFrame.setZoomFactor(width / 1200)
 }

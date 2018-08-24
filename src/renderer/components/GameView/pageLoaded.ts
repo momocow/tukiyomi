@@ -2,7 +2,7 @@ import { parse as parseURL } from 'url'
 
 import addDimmer from './guest/scripts/addDimmer'
 import setDMMCookie from './guest/scripts/setDMMCookie'
-import { alignGameLayout, resizeGameView } from './guest/scripts/alignGameLayout'
+import alignGameLayout from './guest/scripts/alignGameLayout'
 import Guest from './guest'
 
 import { subscribe } from '../../ipc'
@@ -27,11 +27,15 @@ export default function onPageLoaded (gameview: Electron.WebviewTag) {
     } else if (gamePath && pathname.startsWith(gamePath)) {
       guest.decorate(CSS_GAME_LAYOUT)
       guest.run(alignGameLayout)
-      const { width } = gameview.getBoundingClientRect()
-      guest.run(resizeGameView, [ width ])
+      resizeGameView(gameview)
       subscribe('window-resize', function () {
-        guest.run(resizeGameView, [ width ])
+        resizeGameView(gameview)
       })
     }
   }
+}
+
+function resizeGameView (gameview: Electron.WebviewTag) {
+  const { width } = gameview.getBoundingClientRect()
+  gameview.setZoomFactor(width / 1200)
 }
