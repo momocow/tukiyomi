@@ -1,4 +1,4 @@
-import Logger from '../utils/Logger'
+import Logger from '../services/Logger'
 
 import { IS_DEV } from '../env'
 

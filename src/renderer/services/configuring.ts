@@ -1,5 +1,5 @@
-import Config from '../utils/Config'
-import I18n from '../utils/I18n'
+import Config from '../services/Config'
+import I18n from '../services/I18n'
 
 import ref from '../../common/refdb'
 

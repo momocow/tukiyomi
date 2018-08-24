@@ -40,3 +40,20 @@ registerService('env', function () {
 registerCommand('logger', function (txt: string) {
   appPool.push(txt)
 })
+
+// registerCommand('gameview-init', function (info: TukiyomiService.GameViewInfo) {
+//   mainLogger.debug('Gameview: Init at main process: %O', info)
+
+//   const gameview = webContents.fromId(info.id)
+//   console.log(gameview)
+//   gameview.on('will-navigate', console.log)
+//   gameview.on('will-navigate', (e, url) => {
+//     if (URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
+//       mainLogger.debug('Gameview: Whitelist validated: ', url)
+//       return
+//     }
+
+//     e.preventDefault()
+//     mainLogger.debug('Gameview: Navigation has been prevented: %s', url)
+//   })
+// })

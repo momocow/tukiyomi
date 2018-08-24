@@ -12,26 +12,31 @@ export default function alignGameLayout () {
     let spacingTop = document.querySelector<HTMLElement>('#spacing_top')
     if (spacingTop) {
       spacingTop.style.display = status
-      console.debug('I got you, SpacingTop!')
+      console.debug('I got you, SpacingTop (outer)!')
     }
     if (!document.querySelector('#game_frame')) {
       return
     }
-    function t (count: number) {
-      try {
-        if (count > 20) {
-          return
-        }
-        const gameFrame = document.querySelector<HTMLIFrameElement>('#game_frame')
-        if (gameFrame && gameFrame.contentWindow && gameFrame.contentWindow.document) {
-          spacingTop = gameFrame.contentWindow.document.querySelector<HTMLElement>('#spacing_top')
-          if (spacingTop) spacingTop.style.display = status
-          console.debug('I got you, SpacingTop!')
-        }
-      } catch (e) {
-        setTimeout(() => t(count + 1), 1000)
+
+    let count = 0
+    const timer = setInterval(function () {
+      if (count > 20) { // max try, give up
+        console.debug('Max number of try reached. Give up.')
+        clearInterval(timer)
+        return
       }
-    }
-    t(0)
+
+      count++
+
+      const gameFrame = document.querySelector<HTMLIFrameElement>('#game_frame')
+      if (gameFrame && gameFrame.contentWindow && gameFrame.contentWindow.document) {
+        spacingTop = gameFrame.contentWindow.document.querySelector<HTMLElement>('#spacing_top')
+        if (spacingTop) {
+          spacingTop.style.display = status
+          console.debug('I got you, SpacingTop (inner)!')
+          clearInterval(timer)
+        }
+      }
+    }, 1000)
   }
 }

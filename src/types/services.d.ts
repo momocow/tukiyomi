@@ -24,4 +24,8 @@ declare namespace TukiyomiService {
     isRelease: boolean
     release: string
   }
+
+  export interface GameViewInfo {
+    id: number
+  }
 }

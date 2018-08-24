@@ -18,10 +18,15 @@
 /**/
 /******************************************************************/
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, shell } from 'electron'
+import { GUEST_URL_WHITELIST } from '../common/config'
 
 import { IS_DEV } from './env'
 import { publish } from './ipc'
+
+export const HOST_URL_WHITELIST = [
+  `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`
+]
 
 function createWindow () {
   let window: BrowserWindow | null = new BrowserWindow({
@@ -54,6 +59,32 @@ function createWindow () {
 
   window.on('closed', () => {
     window = null
+  })
+
+  window.webContents.on('will-navigate', (e, url) => {
+    if (HOST_URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
+      mainLogger.debug('Whitelist validated: ', url)
+      return
+    }
+
+    // disable main UI to be redirect
+    e.preventDefault()
+    mainLogger.debug('Navigation has been prevented: %s', url)
+    shell.openExternal(url)
+  })
+
+  window.webContents.on('did-attach-webview', function (e, gameview) {
+    gameview.on('will-navigate', function (e, url) {
+      if (GUEST_URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
+        mainLogger.debug('Gameview: Whitelist validated: ', url)
+        return
+      }
+
+      // disable main UI to be redirect
+      e.preventDefault()
+      mainLogger.debug('Gameview: Navigation has been prevented: %s', url)
+      shell.openExternal(url)
+    })
   })
 }
 
