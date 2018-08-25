@@ -12,17 +12,18 @@ interface ServiceOptions {
 const responseHandlerMap: Map<string, ((data: any) => void)> = new Map()
 
 // global response handler
-ipcRenderer.on('svc:response', function ({ meta, data }: TukiyomiService.AsyncServiceResponsePacket) {
+ipcRenderer.on('svc:response', function (evt: Electron.Event, { meta, data }: TukiyomiService.AsyncServiceResponsePacket) {
   const handler: ((data: any) => void) | undefined = responseHandlerMap.get(meta.guid)
   if (typeof handler === 'function') {
     handler(data)
+    responseHandlerMap.delete(meta.guid)
   }
 })
 
 /**
  * Async service call
  */
-export function service (svc: string, args: any[], { timeout }: ServiceOptions = { timeout: Infinity }): Promise<any> {
+export function service<T> (svc: string, args?: any[], { timeout }: ServiceOptions = { timeout: Infinity }): Promise<T> {
   return new Promise(function (resolve, reject) {
     const guid = uuidv4()
     let timer: NodeJS.Timer | undefined
@@ -46,12 +47,12 @@ export function service (svc: string, args: any[], { timeout }: ServiceOptions =
   })
 }
 
-export function serviceSync (svc: string, ...args: any[]) {
+export function serviceSync<T> (svc: string, ...args: any[]) {
   const { data }: TukiyomiService.ServiceResponsePacket = ipcRenderer.sendSync(
     `svc:${svc}:sync`,
     <TukiyomiService.ServiceRequestPacket>{ args }
   )
-  return data
+  return <T>data
 }
 
 export function command (command: string, ...args: any[]) {

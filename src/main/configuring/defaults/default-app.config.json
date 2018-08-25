@@ -1,0 +1,6 @@
+{
+  "general": {
+    "setDMMCookie": true,
+    "disableDMMDialog": true
+  }
+}

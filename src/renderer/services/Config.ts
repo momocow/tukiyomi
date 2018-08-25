@@ -1,49 +1,62 @@
 import _get from 'lodash/get'
 import _set from 'lodash/set'
-import { ipcRenderer } from 'electron'
-
-
 import { EventEmitter } from 'events'
+
+import { service, subscribe } from '../ipc'
+import store from '../store'
+
+import { appLogger } from '../logging/loggers'
 
 import IService from './IService'
 
-export default class Config extends EventEmitter implements IService {
+export default class Config<T extends object> extends EventEmitter implements IService {
   public readonly service: string = 'config'
-
-  private _namespace: string
-  private _data = {}
-
-  constructor (namespace: string) {
+  
+  private _data: T | undefined
+  
+  /**
+   * Automatically sync with main process and Vuex store
+   */
+  constructor (public namespace: string) {
     super()
 
-    this._namespace = namespace
+    service<T>('config', [ namespace ])
+      .then((result) => {
+        appLogger.debug('Config "%s" is loaded.', namespace)
+        this._data = result
 
-    ipcRenderer.on(`${this.service}:${this._namespace}`, (key: any, value: any) => {
-      this._set(key, value)
+        this.emit('load')
+        store.commit('config/load', {
+          namespace,
+          config: this._data
+        })
+      })
+    
+    subscribe(`config.change[${namespace}]`, (k: string, n: any) => {
+      this.set(k, n)
     })
-    ipcRenderer.send(this.service, this._namespace)
   }
 
   get (key: string, defaultVal?: any): any {
     return _get(this._data, key, defaultVal)
   }
 
-  private _set (key: object): void
-  private _set (key: string, value: any): void
-  private _set (key: string | object, value?: any): void {
-    if (typeof key === 'string') {
-      if (this.get(key) === value) return
-
-      const oldVal = this.get(key)
+  set (key: string, value: any): void {
+    if (!this._data) return
+    
+    const oldVal = this.get(key)
+    if (typeof key === 'string' && oldVal !== value) {
       _set(this._data, key, value)
       this.emit('change', key, value, oldVal)
-    } else {
-      this._data = key
-      this.emit('load')
+      store.commit('config/change', {
+        namespace: this.namespace,
+        key,
+        value
+      })
     }
   }
 
-  set (key: string, value: any): void {
-    this._set(key, value)
+  toJSON () {
+    return this._data
   }
 }

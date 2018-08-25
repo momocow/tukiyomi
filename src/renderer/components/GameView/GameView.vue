@@ -18,7 +18,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import { join } from 'path'
 
-import { mainLogger } from '../../logging/loggers'
+import { appLogger } from '../../logging/loggers'
 import { IS_DEV } from '../../env'
 // import { command } from '../../ipc'
 
@@ -34,22 +34,22 @@ export default class GameView extends Vue {
   public preload: string = join(__static, 'webview-preload.js')
 
   mounted () {
-    mainLogger.debug('Gameview: mounted.')
+    appLogger.debug('Gameview: mounted.')
 
     const gameview = <Electron.WebviewTag> this.$refs.gameview
     let startLoadingTime: number
 
     gameview.addEventListener('did-start-loading', function () {
-      mainLogger.debug('Gameview: start loading')
+      appLogger.debug('Gameview: start loading')
       startLoadingTime = Date.now()
     })
 
     gameview.addEventListener('dom-ready', function loadGame () {
       const url = gameview.getURL()
       const elapsed = Date.now() - startLoadingTime
-      mainLogger.debug('Gameview: finish loading')
-      mainLogger.debug('Gameview: has been navigated to "%s"', url)
-      mainLogger.debug('Gameview: elapsed = %d ms', elapsed)
+      appLogger.debug('Gameview: finish loading')
+      appLogger.debug('Gameview: has been navigated to "%s"', url)
+      appLogger.debug('Gameview: elapsed = %d ms', elapsed)
 
       if (IS_DEV && !gameview.isDevToolsOpened()) gameview.openDevTools()
 

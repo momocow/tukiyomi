@@ -7,7 +7,7 @@ import alignGameLayout from './guest/scripts/alignGameLayout'
 import Guest from './guest'
 
 import { subscribe } from '../../ipc'
-import { mainLogger } from '../../logging/loggers'
+import { appLogger } from '../../logging/loggers'
 
 import { KANCOLLE_URL, DMM_HOSTNAME, GAME_RESOLUTION_WIDTH, GAME_RESOLUTION_HEIGHT } from '../../../common/config'
 
@@ -47,6 +47,6 @@ function resizeGameView (gameview: Electron.WebviewTag) {
   const { width, height } = gameview.getBoundingClientRect()
   const zoom = Math.min(width / GAME_RESOLUTION_WIDTH, 1)
   gameview.setZoomFactor(zoom)
-  mainLogger.debug('Gameview: zoom=%f (W: %d/%d, H: %d/%d)',
+  appLogger.debug('Gameview: zoom=%f (W: %d/%d, H: %d/%d)',
     zoom, width, GAME_RESOLUTION_WIDTH, height, GAME_RESOLUTION_HEIGHT)
 }

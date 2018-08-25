@@ -1,4 +1,4 @@
-export const MAIN_LOGGER_NAME     = 'core:main'
+export const APP_LOGGER_NAME     = 'core:main'
 export const RENDERER_LOGGER_NAME = 'core:renderer'
 
 export const LOG_ENTRY_TPL = '[{time}][{process}][{level}][{name}] {message}'

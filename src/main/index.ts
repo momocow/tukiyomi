@@ -3,22 +3,24 @@
 /**/ import './init'
 /**/
 /**/ import state from '../common/state'
-/**/ import { mainLogger } from './logging/loggers'
+/**/ import { appLogger } from './logging/loggers'
 /**/
 /**/ import { LOG_TRANSITION_START, LOG_TRANSITION_END } from '../common/config'
 /**/
 /**/ state
 /**/   .on('stage', function (stage, prevStage) {
 /**/     if (prevStage) {
-/**/       mainLogger.info(LOG_TRANSITION_END, stage)
+/**/       appLogger.info(LOG_TRANSITION_END, stage)
 /**/     }
-/**/     mainLogger.info(LOG_TRANSITION_START, stage)
+/**/     appLogger.info(LOG_TRANSITION_START, stage)
 /**/   })
 /**/   .set('stage', 'init')
 /**/
 /******************************************************************/
 
 import { app, BrowserWindow, shell } from 'electron'
+import WindowKeeper from 'electron-window-state'
+
 import { GUEST_URL_WHITELIST } from '../common/config'
 
 import { IS_DEV } from './env'
@@ -29,13 +31,20 @@ export const HOST_URL_WHITELIST = [
 ]
 
 function createWindow () {
-  let window: BrowserWindow | null = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-    }
+  const winState = WindowKeeper({
+    defaultWidth: 1000,
+    defaultHeight: 600
   })
 
+  const { x, y, width, height } = winState
+  
+  let window: BrowserWindow | null = new BrowserWindow({
+    x, y, width, height,
+    minWidth: 500,
+    minHeight: 300
+  })
+
+  winState.manage(window)
   window.setMenu(null)
 
   if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
@@ -63,26 +72,26 @@ function createWindow () {
 
   window.webContents.on('will-navigate', (e, url) => {
     if (HOST_URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
-      mainLogger.debug('Whitelist validated: ', url)
+      appLogger.debug('Whitelist validated: ', url)
       return
     }
 
     // disable main UI to be redirect
     e.preventDefault()
-    mainLogger.debug('Navigation has been prevented: %s', url)
+    appLogger.debug('Navigation has been prevented: %s', url)
     shell.openExternal(url)
   })
 
   window.webContents.on('did-attach-webview', function (e, gameview) {
     gameview.on('will-navigate', function (e, url) {
       if (GUEST_URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
-        mainLogger.debug('Gameview: Whitelist validated: ', url)
+        appLogger.debug('Gameview: Whitelist validated: ', url)
         return
       }
 
       // disable main UI to be redirect
       e.preventDefault()
-      mainLogger.debug('Gameview: Navigation has been prevented: %s', url)
+      appLogger.debug('Gameview: Navigation has been prevented: %s', url)
       shell.openExternal(url)
     })
   })

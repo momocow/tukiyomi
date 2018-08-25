@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/momocow/tukiyomi#readme",
   "devDependencies": {
+    "@types/electron-window-state": "^2.0.31",
     "@types/fs-extra": "^5.0.4",
     "@types/lodash": "^4.14.116",
     "@types/uuid": "^3.4.3",
@@ -63,7 +64,9 @@
   "dependencies": {
     "@grass/grass-logger": "file:vendors/grass-logger",
     "@grass/grass-rolling-array": "file:vendors/grass-rolling-array",
+    "@iarna/toml": "^2.0.0",
     "@sentry/electron": "^0.8.1",
+    "electron-window-state": "^4.1.1",
     "http-proxy": "^1.17.0",
     "lodash": "^4.17.10",
     "read-config-file": "^3.1.2",

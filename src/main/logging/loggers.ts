@@ -1,7 +1,7 @@
 import Logger from '@grass/grass-logger'
 
 import { IS_DEV } from '../env'
-import { MAIN_LOGGER_NAME, LOG_ENTRY_TPL } from '../../common/config'
+import { APP_LOGGER_NAME, LOG_ENTRY_TPL } from '../../common/config'
 
 import LogPool from './LogPool'
 
@@ -39,4 +39,4 @@ export function getLogger (name: string): Logger {
 }
 
 export const gameLogger = getGameLogger()
-export const mainLogger = getLogger(MAIN_LOGGER_NAME)
+export const appLogger = getLogger(APP_LOGGER_NAME)
