@@ -94,6 +94,10 @@ function createWindow () {
       appLogger.debug('Gameview: Navigation has been prevented: %s', url)
       shell.openExternal(url)
     })
+
+    gameview.session.setProxy({
+      proxyRules: ''
+    })
   })
 }
 

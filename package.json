@@ -66,6 +66,7 @@
     "@grass/grass-rolling-array": "file:vendors/grass-rolling-array",
     "@iarna/toml": "^2.0.0",
     "@sentry/electron": "^0.8.1",
+    "electron-ipc-stream": "^0.2.0",
     "electron-window-state": "^4.1.1",
     "http-proxy": "^1.17.0",
     "lodash": "^4.17.10",
