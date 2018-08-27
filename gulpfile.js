@@ -21,7 +21,6 @@ const build = require('./build/scripts/build')
 const {
   initCompile,
   syncPkgJson,
-  composeEssentials,
   compileMain,
   compileRenderer
 } = require('./build/scripts/compile')
@@ -38,7 +37,6 @@ gulp.task('compile',
     initCompile,
     gulp.parallel(
       syncPkgJson,
-      composeEssentials,
       'compile:main',
       'compile:renderer'
     )

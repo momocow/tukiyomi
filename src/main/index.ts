@@ -95,9 +95,9 @@ function createWindow () {
       shell.openExternal(url)
     })
 
-    gameview.session.setProxy({
-      proxyRules: ''
-    })
+    // gameview.session.setProxy({
+    //   proxyRules: ''
+    // })
   })
 }
 

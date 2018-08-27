@@ -1,4 +1,3 @@
-const gulp = require('gulp')
 const fs = require('fs-extra')
 const path = require('path')
 const { exec } = require('child_process')
@@ -10,6 +9,7 @@ const WEBPACK_RENDERER_CONF = require('electron-webpack/webpack.renderer.config'
 const TARGET_DIR = path.join(global.ROOT_DIR, 'dist')
 
 const SHOULD_SYNC = {
+  version: true,
   dependencies: function (val) {
     if (typeof val === 'object') {
       Object.keys(val)
@@ -24,22 +24,18 @@ const SHOULD_SYNC = {
   }
 }
 
-const RESOURCES = [
-  'assets/icons/*'
-]
-
 // default to clean up all compiled
 // Use --no-clean to disable clean up
 function initCompile () {
   if (!process.argv.includes('--no-clean')) {
-    fs.removeSync(TARGET_DIR)
+    fs.removeSync(path.join(TARGET_DIR))
   }
   return fs.ensureDir(TARGET_DIR)
 }
 
 function syncPkgJson () {
   const DEV_PKG = require(path.join(global.ROOT_DIR, 'package.json'))
-  const PROD_PKG = require(path.join(global.ROOT_DIR, 'assets', 'prod-package.json'))
+  const PROD_PKG = require(path.join(global.ROOT_DIR, 'build', 'prod-package.json'))
   Object.keys(SHOULD_SYNC)
     .forEach(p => (PROD_PKG[p] = typeof SHOULD_SYNC[p] === 'function' ? SHOULD_SYNC[p](DEV_PKG[p]) : DEV_PKG[p]))
 
@@ -54,11 +50,6 @@ function installDeps () {
 
 function dedupe () {
   return exec(`npm dedupe --no-package-lock`)
-}
-
-function composeEssentials () {
-  return gulp.src(RESOURCES, { base: '.' })
-    .pipe(gulp.dest(TARGET_DIR))
 }
 
 /**
@@ -106,7 +97,6 @@ module.exports = {
   initCompile,
   installDeps,
   dedupe,
-  composeEssentials,
   compileMain,
   compileRenderer,
   syncPkgJson

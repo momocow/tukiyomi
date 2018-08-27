@@ -12,15 +12,12 @@
 </template>
 
 <script lang="ts">
-///<reference path="../../../types/index.d.ts" />
-
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { join } from 'path'
 
 import { appLogger } from '../../logging/loggers'
-import { IS_DEV } from '../../env'
-// import { command } from '../../ipc'
+import { IS_DEV, ASSETS_DIR } from '../../env'
 
 import tweakView from './tweakView'
 
@@ -31,7 +28,7 @@ import { KANCOLLE_URL } from '../../../common/config'
 })
 export default class GameView extends Vue {
   public src: string = KANCOLLE_URL
-  public preload: string = join(__static, 'webview-preload.js')
+  public preload: string = join(ASSETS_DIR, 'scripts', 'webview-preload.js')
 
   mounted () {
     appLogger.debug('Gameview: mounted.')
@@ -55,10 +52,6 @@ export default class GameView extends Vue {
 
       tweakView(gameview)
     })
-
-    // command('gameview-init', { id: gameview.getWebContents().id })
-    // gameview.getWebContents()
-    //   .on('will-navigate', console.log)
   }
 }
 </script>

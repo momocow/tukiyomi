@@ -1,5 +1,3 @@
-///<reference path="../types/services.d.ts" />
-
 import { ipcRenderer } from 'electron'
 import uuidv4 from 'uuid/v4'
 

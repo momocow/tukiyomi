@@ -1,10 +1,37 @@
-# extends = 'build/build.base.toml'
+extends = 'build/build.base.toml'
 
 appId = "me.momocow.tukiyomi"
 productName = "tukiyomi"
 artifactName = "tukiyomi-v${version}-local.${ext}"
 asar = true
 npmRebuild = true
+
+
+[extraMetadata]
+  main = "main.js"
+
+[[files]]
+from = "."
+# package.json is added to filter for main file set in any case, but some inclusive pattern must be in the filter, otherwise electron-builder will add */**
+filter = [ "package.json", "RELEASE" ]
+
+[[files]]
+from = "dist/main"
+
+[[files]]
+from = "dist/renderer"
+
+[[files]]
+from = "dist/renderer-dll"
+
+[[files]]
+from = "assets"
+to = "assets"
+filter = [ "**/*" ]
+
+[[extraResources]]
+from = "static"
+to = "static"
 
 [win]
 publish = [
@@ -31,6 +58,7 @@ artifactName = "tukiyomi-setup-v${version}-local.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
+include = "build/installer.nsh"
 
 [linux]
 publish = [

@@ -20,9 +20,10 @@ declare namespace TukiyomiService {
   }
 
   export interface EnvResult {
-    isDev: boolean
-    isRelease: boolean
-    release: string
+    IS_DEV: boolean
+    IS_RELEASE: boolean
+    RELEASE: string,
+    ASSETS_DIR: string
   }
 
   export interface GameViewInfo {

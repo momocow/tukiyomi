@@ -16,13 +16,14 @@ declare module "@grass/grass-logger" {
     renderer: (entry: LogEntry) => {[prop: string]: any}
 
     constructor (name: string)
-    on: (event: "log", listener: (txt: string, lv: LogLevel) => void) => this
+    on (event: "log", listener: (txt: string, lv: LogLevel) => void): this
     
-    setLevel: (tag: LevelTag) => void
-    debug: (msg: string, ...formatArgs: any[]) => void
-    info: (msg: string, ...formatArgs: any[]) => void
-    warn: (msg: string, ...formatArgs: any[]) => void
-    error: (msg: string, ...formatArgs: any[]) => void
+    setLevel (tag: LevelTag): void
+    log (msg: string, ...formatArgs: any[]): void
+    debug (msg: string, ...formatArgs: any[]): void
+    info (msg: string, ...formatArgs: any[]): void
+    warn (msg: string, ...formatArgs: any[]): void
+    error (msg: string, ...formatArgs: any[]): void
 
   }
 }

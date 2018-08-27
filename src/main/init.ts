@@ -31,7 +31,7 @@ if (IS_RELEASE) {
   })
 }
 
-import { IS_RELEASE, RELEASE, IS_DEV } from './env'
+import { IS_RELEASE, RELEASE, IS_DEV, ASSETS_DIR } from './env'
 import { registerService, registerCommand } from './ipc'
 
 import { configMap } from './configuring/configs'
@@ -70,9 +70,10 @@ registerService('config', async function (namespace: string, key?: string, defVa
 // IPC services/commands registration
 registerService('env', function () {
   return {
-    isDev: IS_DEV,
-    isRelease: IS_RELEASE,
-    release: RELEASE
+    IS_DEV,
+    IS_RELEASE,
+    RELEASE,
+    ASSETS_DIR
   }
 })
 

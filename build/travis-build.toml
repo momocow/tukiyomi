@@ -1,8 +1,3 @@
 extends = 'build/local-build.toml'
 
 artifactName = "tukiyomi-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
-
-[[files]]
-from = "."
-filter = [ "RELEASE" ]
-

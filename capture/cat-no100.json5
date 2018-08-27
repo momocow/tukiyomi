@@ -1,0 +1,10 @@
+// http://203.104.209.7/kcsapi/api_world/register
+
+// Time unmatch or token expire 
+// 本次實裝的第二期Block-1尚未完善，後期會追加更多基於HTML5技術的新項目實裝。
+// 並且由於系統不穩定將暫停開放新玩家註冊，安卓的app也暫未運用HTML5技術，請等待下次更新。
+{
+  "api_result": 100,
+  "api_result_msg": "申し訳ありませんがブラウザを再起動し再ログインしてください。"
+}
+  

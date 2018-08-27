@@ -7,7 +7,7 @@ const { stringify } = require('./utils')
 const { Stdout, Stderr } = require('./output')
 
 class Logger extends EventEmitter {
-  constructor(name, { template = '[{time}][{name}][{level}] {message}' } = {}) {
+  constructor (name, { template = '[{time}][{name}][{level}] {message}' } = {}) {
     super()
 
     this.name = name
@@ -25,6 +25,13 @@ class Logger extends EventEmitter {
    */
   setLevel (level) {
     this._level = LogLevel[level] || this._level
+  }
+
+  /**
+   * @alias debug
+   */
+  log (msg, ...args) {
+    this.debug(msg, ...args)
   }
 
   debug (msg, ...args) {
