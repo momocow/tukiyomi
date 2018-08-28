@@ -1,8 +1,6 @@
 {
-  "name": "@tukiyomi",
+  "name": "tukiyomi-plugins",
   "version": "0.0.0",
-  "description": "Yet another scalable KanColle Viewer.",
-  "main": "./main/main.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/momocow/tukiyomi.git"

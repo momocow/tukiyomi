@@ -17,7 +17,6 @@
 /**/   .set('stage', 'init')
 /**/
 /******************************************************************/
-
 import { app, BrowserWindow, shell } from 'electron'
 import WindowKeeper from 'electron-window-state'
 

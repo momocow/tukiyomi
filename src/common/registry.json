@@ -1,0 +1,14 @@
+{
+  "taobao": {
+    "name": "Taobao (CN)",
+    "server": "http://registry.npm.taobao.org/"
+  },
+  "cnpm": {
+    "name": "CNPM (CN)",
+    "server": "http://r.cnpmjs.org/"
+  },
+  "npm": {
+    "name": "NPMJS (US)",
+    "server": "https://registry.npmjs.org/"
+  }
+}

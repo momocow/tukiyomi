@@ -6,10 +6,12 @@
 import fs from 'fs'
 import { app } from 'electron'
 import { join } from 'path'
+import { platform } from 'os'
 
 import safeCall from '../common/safe'
 
 export const START_FROM_NPM = process.env.START_FROM_NPM
+export const IS_WIN32 = platform() === 'win32'
 export const IS_DEV = START_FROM_NPM ||
   process.argv.includes('--dev') ||
   process.env.NODE_ENV === 'development'

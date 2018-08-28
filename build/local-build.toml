@@ -58,7 +58,6 @@ artifactName = "tukiyomi-setup-v${version}-local.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
-include = "build/installer.nsh"
 
 [linux]
 publish = [
