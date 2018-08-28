@@ -39,6 +39,8 @@ function getPluginNameCandidates (plugin: string): string[] {
 export default class PluginLoader extends EventEmitter {
   private readonly _pkgJson: string
   private readonly _npmBin: string = `./node_modules/.bin/npm${IS_WIN32 ? '.cmd' : ''}`
+  private readonly _pluginInsts: Map<string, TukiYomi.IPlugin> = new Map()
+  private readonly _pluginStates: WeakMap<TukiYomi.IPlugin, {[k: string]: any}> = new WeakMap()
 
   constructor (
     public readonly path: string = join(ROOT_DIR, 'plugins'),
@@ -47,6 +49,9 @@ export default class PluginLoader extends EventEmitter {
     super()
 
     this._pkgJson = join(this.path, 'package.json')
+
+    appLogger.debug('PluginLoader: (Init) Using plugin root "%s".', this.path)
+    appLogger.debug('PluginLoader: (Init) using registry "%s".', this.registry)
   }
 
   _execNpm (args: string[], options?: object) {
@@ -64,15 +69,14 @@ export default class PluginLoader extends EventEmitter {
   }
 
   _init () {
+    removeSync(this.path)
     ensureDirSync(this.path)
+
     copyFileSync(join(__static, 'plugins-package.json'), this._pkgJson)
   }
 
   list (): string[] {
-    const pkg = inspectPackage(this.path, () => {
-      removeSync(this.path)
-      this._init()
-    })
+    const pkg = inspectPackage(this.path)
     return pkg && typeof pkg.dependencies ==='object' ? Object.keys(pkg.dependencies) : []
   }
 
@@ -82,6 +86,7 @@ export default class PluginLoader extends EventEmitter {
 
   async inspectRemote (plugin: string): Promise<object | null> {
     for (const candidate of getPluginNameCandidates(plugin)) {
+      appLogger.debug('PluginLoader: Try to inspect "%s".', candidate)
       try {
         const { stdout } = await this._execNpm([
           'view',
@@ -90,26 +95,62 @@ export default class PluginLoader extends EventEmitter {
         ], {
           cwd: this.path
         })
-
-        return JSON.parse(stdout)
+        const meta = JSON.parse(stdout)
+        appLogger.debug('PluginLoader: "%s" successfully inspected.', candidate)
+        return meta
       } catch (e) {
-        appLogger.debug('Failed to inspect "%s" from remote.', candidate)
-        appLogger.debug('%O', e)
+        if (`${e}`.includes('E404')) {
+          appLogger.debug('PluginLoader: Invalid candidate, "%s".', candidate)
+        } else {
+          appLogger.warn('PluginLoader: Error occurs when trying to inspect "%s".', candidate)
+          appLogger.warn('%O', e)
+        }
       }
     }
+
+    appLogger.warn('PluginLoader: Failed to inspect "%s".', plugin)
 
     return null
   }
 
-  async uninstall () {
+  async uninstall (plugin: string): Promise<void> {
+    for (const candidate of getPluginNameCandidates(plugin)) {
+      appLogger.debug('PluginLoader: Try to uninstall "%s".', candidate)
+      if (this.list().includes(candidate)) {
+        await this._execNpm([ 'uninstall', candidate ], {
+          cwd: this.path
+        })
+        appLogger.debug('PluginLoader: "%s" successfully uninstalled.', candidate)
+        return
+      } else {
+        appLogger.debug('PluginLoader: plugin "%s" is not installed.', candidate)
+      }
+    }
 
+    appLogger.debug('PluginLoader: Failed to uninstall "%s".', plugin)
   }
 
-  async install (plugin: string = '') {
-    this._execNpm([ 'install', plugin ])
+  async install (plugin: string = ''): Promise<void> {
+    for (const candidate of getPluginNameCandidates(plugin)) {
+      appLogger.debug('PluginLoader: Try to install "%s".', candidate)
+      try {
+        await this._execNpm([ 'install', candidate, '--production' ], {
+          cwd: this.path
+        })
+        appLogger.debug('PluginLoader: "%s" successfully installed.', candidate)
+        return
+      } catch (e) {
+        if (`${e}`.includes('E404')) {
+          appLogger.debug('PluginLoader: Invalid candidate, "%s".', candidate)
+        } else {
+          appLogger.warn('PluginLoader: Error occurs when trying to install "%s".', candidate)
+          appLogger.warn('%O', e)
+        }
+      }
+    }
+    appLogger.warn('PluginLoader: Failed to install "%s".', plugin)
   }
 
   load () {
-
   }
 }

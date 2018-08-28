@@ -1,5 +1,4 @@
 ///<reference path="../../types/index.d.ts" />
-///<reference path="../../types/services.d.ts" />
 
 import './assets/styles/index.css'
 
