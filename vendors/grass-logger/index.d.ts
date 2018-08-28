@@ -1,5 +1,3 @@
-import { EventEmitter } from 'events'
-
 declare module "@grass/grass-logger" {
   type LevelTag = "ALL"|"DEBUG"|"INFO"|"WARN"|"ERROR"|"NONE"
   type LogEntry = {name: string, time: Date, level: LogLevel, message: string}
@@ -11,7 +9,7 @@ declare module "@grass/grass-logger" {
     toString (): string
   }
 
-  export default class Logger extends EventEmitter {
+  export default class Logger extends NodeJS.EventEmitter {
     template: string
     renderer: (entry: LogEntry) => {[prop: string]: any}
 

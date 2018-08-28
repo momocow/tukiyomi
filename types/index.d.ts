@@ -1,5 +1,3 @@
-import Logger from '../vendors/grass-logger'
-
 declare const __static: string
 
 declare namespace TukiYomi {
