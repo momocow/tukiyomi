@@ -26,6 +26,7 @@ interface Logger extends NodeJS.EventEmitter {
 declare namespace NodeJS {
   interface Global {
     readonly toolkit: {
+      getEventBus (): NodeJS.EventEmitter
       getLogger (name: string): Logger
     }
   }

@@ -9,8 +9,15 @@ function normalizePluginName (name: string): string {
   return name
 }
 
-export default abstract class PluginBase {
+export function Plugin (name: string): ClassDecorator {
+  return function (target, propKey) {
+    
+  }
+}
+
+export abstract class PluginBase {
   public readonly name: string
+  private readonly eventBus: NodeJS.EventEmitter = global.toolkit.getEventBus()
   private readonly logger: Logger
 
   constructor (name: string) {
@@ -18,5 +25,7 @@ export default abstract class PluginBase {
     this.logger = global.toolkit.getLogger(this.name)
   }
 
+  // life cycle methods
   abstract init (): void
+  abstract destroy (): void
 }
