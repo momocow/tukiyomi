@@ -1,117 +1,45 @@
-import PluginBase from '@tukiyomi/plugin-base'
-import { execFile, ExecFileOptions } from 'child_process'
-import { promisify } from 'util'
 import {
   ensureDir,
   ensureDirSync,
   copyFileSync,
-  readJSONSync,
   removeSync,
   existsSync
  } from 'fs-extra'
 import { EventEmitter } from 'events'
 import { join } from 'path'
+import { NodeVM } from 'vm2'
+import { ExecFileOptions } from 'child_process'
 
-import { appLogger } from '../logging/loggers'
+import { getLogger, getPluginLogger } from '../logging/loggers'
 
-import { ROOT_DIR, APP_DIR, IS_WIN32 } from '../env'
+import { APP_DIR } from '../env'
 
-const YARN_BIN = `./node_modules/.bin/yarn${IS_WIN32 ? '.cmd' : ''}`
-const pExecFile = promisify(execFile)
+import eventBus from './EventBus'
 
-function yarn (args: string[], options?: ExecFileOptions) {
-  const _env = options && options.env ? options.env : {}
-  return pExecFile(YARN_BIN, [
-    ...args,
-    '--non-interactive'
-  ], {
-    ...options,
-    windowsHide: true,
-    env: {
-      ..._env,
-      NODE_ENV: 'production'
-    }
-  }).then(({ stdout, stderr }) => {
-    let err
-    try {
-      err = JSON.parse(stderr)
-    } catch (e) { }
-
-    if (typeof err === 'object' && err.type === 'error') {
-      throw new Error(err.data || `Command failed. "yarn ${args.join(' ')}"`)
-    }
-
-    return {
-      stdout, stderr
-    }
-  })
-}
-
-function inspectPackage (dir: string, failover?: Function): {[k: string]: any} | null {
-  const pkg: {[k: string]: any} | null = readJSONSync(join(dir, 'package.json'), {
-    throws: false
-  })
-
-  if (typeof failover === 'function') {
-    failover(dir)
-
-    return readJSONSync(join(dir, 'package.json'), {
-      throws: false
-    })
-  }
-
-  return pkg
-}
-
-/**
- * A valid plugin is defined as the following rules:
- * 1. MUST includes "tukiyomi-plugin" in its keywords list. (For better npm search support)
- * 2. MUST has its name starting with "tukiyomi-plugin-" OR "@tukiyomi/plugin-" (published in the scope of TukiYomi).
- *    (For better context idetification)
- */
-async function validateModuleAsPlugin (plugin: string): Promise<boolean> {
-  if (!plugin.startsWith('tukiyomi-plugin-') || !plugin.startsWith('@tukiyomi/plugin-')) return false
-
-  const { stdout } = await yarn([ 'info', plugin, 'keywords', '--json' ])
-  try {
-    const { data }: { data: string[] } = JSON.parse(stdout)
-    return data.includes('tukiyomi-plugin')
-  } catch (e) {
-    appLogger.warn('PluginLoader: Failed to validate plugin "%s". Assume it is invalid.', plugin)
-    appLogger.warn('%O', e)
-    return false
-  }
-}
-
-function getPluginNameCandidates (plugin: string): string[] {
-  return plugin.startsWith('@tukiyomi/') || plugin.startsWith('tukiyomi-') ? [ plugin ]
-    : [ `@tukiyomi/${plugin}`, `tukiyomi-${plugin}` ]
-}
-
-function normalizePluginName (name: string): string {
-  if (name.startsWith('@tukiyomi/plugin-')) {
-    return name.substr(17)
-  } else if (name.startsWith('tukiyomi-plugin-')) {
-    return name.substr(16)
-  }
-  return name
-}
-
-type Plugin = new (dir: string) => PluginBase
+import {
+  yarn,
+  inspectPackage,
+  normalizePluginName
+} from './plugin-utils'
 
 interface PluginMeta {
-  version?: string,
-  description?: string,
-  keywords?: string[],
-  author?: string | { name: string, email: string },
-  license?: string,
-  dependencies?: {[k: string]: string}
+  name: string,
+  main: string,
+  version: string,
+  description: string,
+  keywords: string[],
+  author: string | { name: string, email: string },
+  license: string,
+  dependencies: {[k: string]: string},
+  displayName: string,
+  dataRoot: string
 }
 
 export default class PluginLoader extends EventEmitter {
   private readonly _pkgJson: string
-  private readonly _pluginInsts: Map<string, PluginBase> = new Map()
-  private readonly _pluginStates: WeakMap<PluginBase, PluginMeta> = new WeakMap()
+  private readonly _pluginInsts: Map<string, Object> = new Map()
+  private readonly _pluginStates: WeakMap<Object, PluginMeta> = new WeakMap()
+  private readonly logger = getLogger('PluginLoader')
 
   constructor (
     public readonly path: string = join(APP_DIR, 'plugins'),
@@ -121,11 +49,12 @@ export default class PluginLoader extends EventEmitter {
 
     this._pkgJson = join(this.path, 'package.json')
 
-    appLogger.debug('PluginLoader: (Init) Using plugin root "%s".', this.path)
-    appLogger.debug('PluginLoader: (Init) using registry "%s".', this.registry)
+    this.logger.debug('PluginLoader: (Init) Using plugin root "%s".', this.path)
+    this.logger.debug('PluginLoader: (Init) using registry "%s".', this.registry)
   }
 
   _execBin (args: string[], options?: ExecFileOptions) {
+    this.logger.debug('> yarn %s', args.join(' '))
     return yarn([
       ...args,
       '--cache-folder',
@@ -151,13 +80,17 @@ export default class PluginLoader extends EventEmitter {
     this.init()
   }
 
-  list (): string[] {
+  listLoaded () {
+    return this._pluginInsts
+  }
+
+  listInstalled (): string[] {
     const pkg = inspectPackage(this.path)
     return pkg && typeof pkg.dependencies ==='object' ? Object.keys(pkg.dependencies) : []
   }
 
-  inspectLocal (plugin: string): {[field: string]: any} | null {
-    return inspectPackage(join(this.path, 'node_modules', plugin))
+  inspectLocal (plugin: string): any {
+    return inspectPackage(join(this.path, 'node_modules', plugin)) || {}
   }
 
   // async inspectRemote (plugin: string, field: string = ''): Promise<object | null> {
@@ -171,54 +104,54 @@ export default class PluginLoader extends EventEmitter {
   //       cwd: this.path
   //     })
   //     const meta = JSON.parse(stdout)
-  //     appLogger.debug('PluginLoader: "%s" successfully inspected.', plugin)
+  //     this.logger.debug('PluginLoader: "%s" successfully inspected.', plugin)
   //     return meta
   //   } catch (e) {
   //     if (`${e}`.includes('E404')) {
-  //       appLogger.debug('PluginLoader: Invalid candidate, "%s".', plugin)
+  //       this.logger.debug('PluginLoader: Invalid candidate, "%s".', plugin)
   //     } else {
-  //       appLogger.warn('PluginLoader: Error occurs when trying to inspect "%s".', plugin)
-  //       appLogger.warn('%O', e)
+  //       this.logger.warn('PluginLoader: Error occurs when trying to inspect "%s".', plugin)
+  //       this.logger.warn('%O', e)
   //     }
   //   }
   // }
 
   // async uninstall (plugin: string): Promise<void> {
   //   for (const candidate of getPluginNameCandidates(plugin)) {
-  //     appLogger.debug('PluginLoader: Try to uninstall "%s".', candidate)
+  //     this.logger.debug('PluginLoader: Try to uninstall "%s".', candidate)
   //     if (this.list().includes(candidate)) {
   //       await this._execBin([ 'uninstall', candidate ], {
   //         cwd: this.path
   //       })
-  //       appLogger.debug('PluginLoader: "%s" successfully uninstalled.', candidate)
+  //       this.logger.debug('PluginLoader: "%s" successfully uninstalled.', candidate)
   //       return
   //     } else {
-  //       appLogger.debug('PluginLoader: plugin "%s" is not installed.', candidate)
+  //       this.logger.debug('PluginLoader: plugin "%s" is not installed.', candidate)
   //     }
   //   }
 
-  //   appLogger.debug('PluginLoader: Failed to uninstall "%s".', plugin)
+  //   this.logger.debug('PluginLoader: Failed to uninstall "%s".', plugin)
   // }
 
   // async install (plugin: string = ''): Promise<void> {
   //   for (const candidate of getPluginNameCandidates(plugin)) {
-  //     appLogger.debug('PluginLoader: Try to install "%s".', candidate)
+  //     this.logger.debug('PluginLoader: Try to install "%s".', candidate)
   //     try {
   //       await this._execBin([ 'install', candidate, '--production' ], {
   //         cwd: this.path
   //       })
-  //       appLogger.debug('PluginLoader: "%s" successfully installed.', candidate)
+  //       this.logger.debug('PluginLoader: "%s" successfully installed.', candidate)
   //       return
   //     } catch (e) {
   //       if (`${e}`.includes('E404')) {
-  //         appLogger.debug('PluginLoader: Invalid candidate, "%s".', candidate)
+  //         this.logger.debug('PluginLoader: Invalid candidate, "%s".', candidate)
   //       } else {
-  //         appLogger.warn('PluginLoader: Error occurs when trying to install "%s".', candidate)
-  //         appLogger.warn('%O', e)
+  //         this.logger.warn('PluginLoader: Error occurs when trying to install "%s".', candidate)
+  //         this.logger.warn('%O', e)
   //       }
   //     }
   //   }
-  //   appLogger.warn('PluginLoader: Failed to install "%s".', plugin)
+  //   this.logger.warn('PluginLoader: Failed to install "%s".', plugin)
   // }
 
   async uninstall (plugin: string) {
@@ -230,41 +163,61 @@ export default class PluginLoader extends EventEmitter {
   }
 
   async load () {
-    // yarn install
+    // yarn install --check-files
     await this._execBin([
-      'install'
+      'install',
+      '--check-files'
     ])
 
-    this.list().forEach(async (plugin: string) => {
-      const Plugin: Plugin = require(join(this.path, 'node_modules', plugin))
+    this.listInstalled().forEach(async (plugin: string) => {
+      const pluginDir = join(this.path, 'node_modules', plugin)
 
-      const displayName = normalizePluginName(plugin)
-      const pluginRoot = join(this.path, displayName)
+      const meta = this.inspectLocal(plugin)
 
-      await ensureDir(pluginRoot)
+      if (meta.main) {
+        const pluginEntry = join(pluginDir, meta.main)
+        const displayName = normalizePluginName(plugin)
+        const dataRoot = join(this.path, displayName)
 
-      const instance = new Plugin(pluginRoot)
-      this._pluginInsts.set(plugin, instance)
+        const pluginLogger = getPluginLogger(dataRoot, displayName)
+  
+        const vm = new NodeVM({
+          console: 'redirect',
+          sandbox: {
+            setTimeout,
+            setInterval,
+            setImmediate,
+            eventBus
+          },
+          require: {
+            external: true
+          }
+        })
+          .on('console.log', (msg, ...args) => {
+            pluginLogger.log(msg, ...args)
+          })
+          .on('console.info', (msg, ...args) => {
+            pluginLogger.info(msg, ...args)
+          })
+          .on('console.debug', (msg, ...args) => {
+            pluginLogger.debug(msg, ...args)
+          })
+          .on('console.warn', (msg, ...args) => {
+            pluginLogger.warn(msg, ...args)
+          })
+          .on('console.error', (msg, ...args) => {
+            pluginLogger.error(msg, ...args)
+          })
 
-      const {
-        version,
-        description,
-        keywords,
-        author,
-        license,
-        dependencies
-      }: PluginMeta = this.inspectLocal(plugin) || {}
-
-      this._pluginStates.set(instance, {
-        version,
-        description,
-        keywords,
-        author,
-        license,
-        dependencies
-      })
-
-      instance.init()
+        const startPlugin = `
+          const Plugini = require("${pluginDir}").default
+          module.exports = new Plugin("${dataRoot}")
+        `
+        const instance: Object = vm.run(startPlugin, pluginEntry)
+  
+        this._pluginInsts.set(plugin, instance)
+        this._pluginStates.set(instance, meta)
+      }
     })
   }
 }

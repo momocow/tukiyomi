@@ -1,22 +1,23 @@
 {
-  "name": "@tukiyomi/plugin-base",
+  "name": "@tukiyomi/plugin-sdk",
   "version": "0.0.0",
   "description": "The base class of TukiYomi plugins.",
-  "main": "./dist/PluginBase.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -p .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "tukiyomi",
-    "plugin",
+    "tukiyomi-sdk",
     "kancolle",
     "browser"
   ],
   "files": [
-    "dist"
+    "dist",
+    "./*.d.ts"
   ],
-  "types": "./dist/PluginBase.d.ts",
+  "types": "./dist/index.d.ts",
   "author": "MomoCow",
   "license": "MIT",
   "devDependencies": {

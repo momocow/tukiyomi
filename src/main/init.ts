@@ -2,9 +2,11 @@
  * Initialization
  ************************/
 import { app } from 'electron'
-import { appPool, gamePool, appLogger } from './logging/loggers'
-appPool.timestamp('START')
-gamePool.timestamp('START')
+import { poolMap, appLogger } from './logging/loggers'
+
+poolMap.forEach(pool => {
+  pool.timestamp('START')
+})
 
 process.on('SIGINT', function () {
   app.quit()
@@ -15,10 +17,10 @@ process.on('SIGTERM', function () {
 })
 
 app.on('will-quit', function (e) {
-  appPool.timestamp('END')
-  appPool.flushSync()
-  gamePool.timestamp('END')
-  gamePool.flushSync()
+  poolMap.forEach(pool => {
+    pool.timestamp('END')
+    pool.flushSync()
+  })
 })
 
 import sentry from '@sentry/electron'
