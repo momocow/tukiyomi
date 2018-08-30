@@ -14,11 +14,11 @@ env:
   - NODE_ENV=production SENTRY_ORG=momocow SENTRY_PROJECT=tukiyomi
 
 install:
-  - npm install @sentry/cli -g
+  # - npm install @sentry/cli -g
 
 before_script:
-  - export SENTRY_RELEASE_VERSION=$(sentry-cli releases propose-version)
-  - echo $SENTRY_RELEASE_VERSION > RELEASE
+  # - export SENTRY_RELEASE_VERSION=$(sentry-cli releases propose-version)
+  # - echo $SENTRY_RELEASE_VERSION > RELEASE
 
 script:
   - |
@@ -35,8 +35,8 @@ before_cache:
 
 # Announce a release to Sentry
 after_success:
-  - sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE_VERSION
-  - sentry-cli releases set-commits --auto $SENTRY_RELEASE_VERSION
+  # - sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE_VERSION
+  # - sentry-cli releases set-commits --auto $SENTRY_RELEASE_VERSION
 
 branches:
   only:

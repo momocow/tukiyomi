@@ -6,8 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # compiled app
-compile
-plugins/
+plugins
+!test/plugins
 .cache
 
 # Prebuilt bin

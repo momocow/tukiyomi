@@ -25,7 +25,7 @@ function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomi.Plugin.Pl
 
   // mixin class with EventEmitter
   class PluginWrapper extends Clazz {
-    public options: TukiYomi.Plugin.PluginOptions = options || {}
+    public meta: TukiYomi.Plugin.PluginOptions = options || {}
     private eventMap: Map<string, Function[]> = new Map()
 
     constructor (dir: string) {

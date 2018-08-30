@@ -10,8 +10,9 @@ import { platform } from 'os'
 
 import safeCall from '../common/safe'
 
-export const IS_DEV = process.env.NODE_ENV === 'development' || process.env.START_FROM_NPM === 'true'
-export const RUN_IN_REPO = process.env.START_FROM_NPM ||
+export const START_FROM_NPM = process.env.START_FROM_NPM === 'true'
+export const IS_DEV = process.env.NODE_ENV === 'development' || START_FROM_NPM
+export const RUN_IN_REPO = START_FROM_NPM ||
   Object.keys(process.env).filter(k => k.startsWith('ELECTRON_WEBPACK_')).length > 0
 export const IS_WIN32 = platform() === 'win32'
 
@@ -30,3 +31,4 @@ export const APP_DIR = app.getAppPath()
 export const ROOT_DIR = RUN_IN_REPO ? APP_DIR : dirname(app.getPath('exe'))
 export const ASSETS_DIR = join(APP_DIR, 'assets')
 export const PLUGINS_DIR = join(ROOT_DIR, 'plugins')
+export const STATIC_DIR = START_FROM_NPM ? join(ROOT_DIR, 'static') : __static

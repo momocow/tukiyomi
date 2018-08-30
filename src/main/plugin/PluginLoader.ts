@@ -12,14 +12,15 @@ import _pick from 'lodash/pick'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
 
-import { APP_DIR } from '../env'
+import { APP_DIR, STATIC_DIR, IS_WIN32 } from '../env'
 
 import eventBus from './EventBus'
 
 import {
   yarn,
   inspectPackage,
-  normalizePluginName
+  normalizePluginName,
+  validateLocalPlugin
 } from './plugin-utils'
 
 interface PluginMeta {
@@ -35,7 +36,7 @@ interface PluginMeta {
   // insert by loader
   displayName: string,
   dataRoot: string,
-  options?: TukiYomi.Plugin.PluginOptions
+  meta?: TukiYomi.Plugin.PluginOptions
 }
 
 export default class PluginLoader extends EventEmitter {
@@ -75,7 +76,7 @@ export default class PluginLoader extends EventEmitter {
   initDir () {
     ensureDirSync(this.path)
     if (!existsSync(this._pkgJson)) {
-      copyFileSync(join(__static, 'plugins-package.json'), this._pkgJson)
+      copyFileSync(join(STATIC_DIR, 'plugins-package.json'), this._pkgJson)
     }
   }
 
@@ -96,67 +97,6 @@ export default class PluginLoader extends EventEmitter {
   inspectLocal (plugin: string): any {
     return inspectPackage(join(this.path, 'node_modules', plugin)) || {}
   }
-
-  // async inspectRemote (plugin: string, field: string = ''): Promise<object | null> {
-  //   try {
-  //     const { stdout } = await this._execBin([
-  //       'info',
-  //       plugin,
-  //       field,
-  //       '--json'
-  //     ], {
-  //       cwd: this.path
-  //     })
-  //     const meta = JSON.parse(stdout)
-  //     this.logger.debug('PluginLoader: "%s" successfully inspected.', plugin)
-  //     return meta
-  //   } catch (e) {
-  //     if (`${e}`.includes('E404')) {
-  //       this.logger.debug('PluginLoader: Invalid candidate, "%s".', plugin)
-  //     } else {
-  //       this.logger.warn('PluginLoader: Error occurs when trying to inspect "%s".', plugin)
-  //       this.logger.warn('%O', e)
-  //     }
-  //   }
-  // }
-
-  // async uninstall (plugin: string): Promise<void> {
-  //   for (const candidate of getPluginNameCandidates(plugin)) {
-  //     this.logger.debug('PluginLoader: Try to uninstall "%s".', candidate)
-  //     if (this.list().includes(candidate)) {
-  //       await this._execBin([ 'uninstall', candidate ], {
-  //         cwd: this.path
-  //       })
-  //       this.logger.debug('PluginLoader: "%s" successfully uninstalled.', candidate)
-  //       return
-  //     } else {
-  //       this.logger.debug('PluginLoader: plugin "%s" is not installed.', candidate)
-  //     }
-  //   }
-
-  //   this.logger.debug('PluginLoader: Failed to uninstall "%s".', plugin)
-  // }
-
-  // async install (plugin: string = ''): Promise<void> {
-  //   for (const candidate of getPluginNameCandidates(plugin)) {
-  //     this.logger.debug('PluginLoader: Try to install "%s".', candidate)
-  //     try {
-  //       await this._execBin([ 'install', candidate, '--production' ], {
-  //         cwd: this.path
-  //       })
-  //       this.logger.debug('PluginLoader: "%s" successfully installed.', candidate)
-  //       return
-  //     } catch (e) {
-  //       if (`${e}`.includes('E404')) {
-  //         this.logger.debug('PluginLoader: Invalid candidate, "%s".', candidate)
-  //       } else {
-  //         this.logger.warn('PluginLoader: Error occurs when trying to install "%s".', candidate)
-  //         this.logger.warn('%O', e)
-  //       }
-  //     }
-  //   }
-  //   this.logger.warn('PluginLoader: Failed to install "%s".', plugin)
-  // }
 
   async uninstall (plugin: string) {
 
@@ -182,6 +122,8 @@ export default class PluginLoader extends EventEmitter {
 
   async load (checkFiles: boolean = true) {
     if (checkFiles) {
+      this.initDir()
+
       // yarn install --check-files
       await this._execBin([
         'install',
@@ -189,10 +131,15 @@ export default class PluginLoader extends EventEmitter {
       ])
     }
 
-    this.listInstalled().forEach((plugin: string) => {
-      PluginLoader.logger.debug('Trying to load the plugin, "%s".', plugin)
+    this.listInstalled().forEach((plugin: string, index) => {
+      PluginLoader.logger.debug('Plugin (%d: %s): start loading', index, plugin)
 
       const pluginDir = join(this.path, 'node_modules', plugin)
+
+      if (!validateLocalPlugin(pluginDir)) {
+        PluginLoader.logger.warn('Plugin (%d: %s): validation failed.', index, plugin)
+        return
+      }
 
       const inspectResult = this.inspectLocal(plugin)
       const meta = <PluginMeta>_pick(
@@ -221,8 +168,7 @@ export default class PluginLoader extends EventEmitter {
           sandbox: {
             setTimeout,
             setInterval,
-            setImmediate,
-            eventBus
+            setImmediate
           },
           require: {
             external: true,
@@ -230,38 +176,52 @@ export default class PluginLoader extends EventEmitter {
           }
         })
           .on('console.log', (msg, ...args) => {
+            console.log('!!! ' + msg, ...args)
             pluginLogger.log(msg, ...args)
           })
           .on('console.info', (msg, ...args) => {
+            console.log('!!! ' + msg, ...args)
             pluginLogger.info(msg, ...args)
           })
           .on('console.debug', (msg, ...args) => {
             pluginLogger.debug(msg, ...args)
           })
           .on('console.warn', (msg, ...args) => {
+            console.log('!!! ' + msg, ...args)
             pluginLogger.warn(msg, ...args)
           })
           .on('console.error', (msg, ...args) => {
+            console.log('!!! ' + msg, ...args)
             pluginLogger.error(msg, ...args)
           })
 
         try {
-          const Plugin = vm.require(plugin)
+          PluginLoader.logger.debug('Plugin (%d: %s): Instantiating', index, plugin)
+
+          const { default: Plugin } = vm.require(
+            IS_WIN32? pluginDir.replace(/\\/g, '\\\\') : pluginDir
+          )
+
           const instance: TukiYomi.PluginWrapper = new Plugin(dataRoot)
-          meta.options = instance.options
+          meta.meta = instance.meta
+          PluginLoader.logger.debug('Plugin (%d: %s): options %O', index, plugin, instance.meta)
 
           this._pluginInsts.set(plugin, instance)
           this._pluginStates.set(instance, meta)
+          this.emit('load', plugin, meta)
+          PluginLoader.logger.debug('Plugin (%d: %s): loaded successfully', index, plugin)
         } catch (e) {
           if (e instanceof VMError) {
-            PluginLoader.logger.warn('Plugin exception occurs!')
-            PluginLoader.logger.warn('%O', e)
+            PluginLoader.logger.warn('Plugin (%d: %s): possible scope violation', index, plugin)
+          } else {
+            PluginLoader.logger.warn('Plugin (%d: %s): uncaught exception', index, plugin)
           }
-          throw e
+          PluginLoader.logger.warn('%O', e)
         }
-        this.emit('load', plugin, meta)
       }
     })
+
+    PluginLoader.logger.info('Loaded plugins: %d', this._pluginInsts.size)
   }
 }
 

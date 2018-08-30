@@ -3,7 +3,7 @@
  ************************/
 import { app } from 'electron'
 import { VMError } from 'vm2'
-import sentry from '@sentry/electron'
+import * as Sentry from '@sentry/electron'
 
 import { SENTRY_DSN } from '../common/config'
 import { poolMap, appLogger, appPool } from './logging/loggers'
@@ -44,11 +44,12 @@ async function main () {
 
   // apply configs
   pluginLoader.registry = appConfig.get('plugin.registry', pluginLoader.registry)
+  pluginLoader.load()
 }
 
 // error report to Sentry
 if (IS_RELEASE) {
-  sentry.init({
+  Sentry.init({
     dsn: SENTRY_DSN,
     release: RELEASE
   })
@@ -59,12 +60,14 @@ process
     if (e instanceof VMError) return
     appLogger.error('Uncaught Exception:')
     appLogger.error('%O', e)
-    sentry.captureException(e)
+    Sentry.captureException(e)
+    app.quit()
   })
   .on('unhandledRejection', e => {
     appLogger.error('Unhandled Rejection:')
     appLogger.error('%O', e)
-    sentry.captureException(e)
+    Sentry.captureException(e)
+    app.quit()
   })
 
 poolMap.forEach(pool => {

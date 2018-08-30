@@ -1,12 +1,12 @@
 import { promisify } from 'util'
 import { readJSONSync } from 'fs-extra'
 import { execFile, ExecFileOptions } from 'child_process'
-import { join } from 'path'
+import { join, resolve } from 'path'
 
 import { IS_WIN32 } from '../env'
 import { appLogger } from '../logging/loggers'
 
-const YARN_BIN = `./node_modules/.bin/yarn${IS_WIN32 ? '.cmd' : ''}`
+const YARN_BIN = resolve(`./node_modules/.bin/yarn${IS_WIN32 ? '.cmd' : ''}`)
 const pExecFile = promisify(execFile)
 
 export function yarn (args: string[], options?: ExecFileOptions) {
@@ -59,8 +59,8 @@ export function inspectPackage (dir: string, failover?: Function): {[k: string]:
  * 2. MUST has its name starting with "tukiyomi-plugin-" OR "@tukiyomi/plugin-" (published in the scope of TukiYomi).
  *    (For better context idetification)
  */
-export async function validateModuleAsPlugin (plugin: string): Promise<boolean> {
-  if (!plugin.startsWith('tukiyomi-plugin-') || !plugin.startsWith('@tukiyomi/plugin-')) return false
+export async function validateRemotePlugin (plugin: string): Promise<boolean> {
+  if (!plugin.startsWith('tukiyomi-plugin-') && !plugin.startsWith('@tukiyomi/plugin-')) return false
 
   const { stdout } = await yarn([ 'info', plugin, 'keywords', '--json' ])
   try {
@@ -71,6 +71,20 @@ export async function validateModuleAsPlugin (plugin: string): Promise<boolean> 
     appLogger.warn('%O', e)
     return false
   }
+}
+
+export function validateLocalPlugin (pluginDir: string) {
+  const meta = inspectPackage(pluginDir)
+  if (meta) {
+    const { name, keywords } = meta
+    return (
+        name.startsWith('tukiyomi-plugin-') ||
+        name.startsWith('@tukiyomi/plugin-')
+      ) &&
+      Array.isArray(keywords) &&
+      keywords.includes('tukiyomi-plugin')
+  }
+  return false
 }
 
 export function getPluginNameCandidates (plugin: string): string[] {

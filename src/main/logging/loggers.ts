@@ -59,6 +59,7 @@ export function getPluginLogger (dataRoot: string, displayName: string): Logger 
   const pluginLogPool = new LogPool(join(dataRoot, 'logs', 'plugin.log'))
   pluginLogPool.associate(logger)
   poolMap.push(pluginLogPool)
+  pluginLogPool.timestamp('START')
   return logger
 }
 

@@ -10,7 +10,7 @@ declare namespace TukiYomi {
   }
 
   interface PluginWrapper {
-    options?: TukiYomi.Plugin.PluginOptions
+    meta?: TukiYomi.Plugin.PluginOptions
     emit (event: string, ...args: any[]): this
   }
 }
