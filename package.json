@@ -26,7 +26,6 @@
   },
   "homepage": "https://github.com/momocow/tukiyomi#readme",
   "devDependencies": {
-    "@types/electron-window-state": "^2.0.31",
     "@types/fs-extra": "^5.0.4",
     "@types/lodash": "^4.14.116",
     "@types/uuid": "^3.4.3",
