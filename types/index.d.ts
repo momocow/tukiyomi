@@ -1,11 +1,17 @@
+///<reference path="./Plugin.d.ts" />
 declare const __static: string
 
 declare namespace TukiYomi {
-  export interface AppConfig {
+  interface AppConfig {
     general?: {
       setDMMCookie?: boolean,
       disableDMMDialog?: boolean
     }
+  }
+
+  interface PluginWrapper {
+    options?: TukiYomi.Plugin.PluginOptions
+    emit (event: string, ...args: any[]): this
   }
 }
 declare namespace TukiyomiService {

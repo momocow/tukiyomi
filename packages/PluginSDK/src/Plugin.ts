@@ -1,5 +1,7 @@
 ///<reference path="./global.d.ts" />
 
+import { eventMap } from './events'
+
 interface PluginClass<PC extends Object> {
   new (...args: any[]): PC
 }
@@ -18,10 +20,54 @@ export function Plugin (options: TukiYomi.Plugin.PluginOptions | PluginClass<Obj
 }
 
 function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomi.Plugin.PluginOptions) {
-  return class extends Clazz {
+  const evtConst = eventMap.get(Clazz)
+  const evtProto = eventMap.get(Clazz.prototype)
+
+  // mixin class with EventEmitter
+  class PluginWrapper extends Clazz {
     public options: TukiYomi.Plugin.PluginOptions = options || {}
+    private eventMap: Map<string, Function[]> = new Map()
+
     constructor (dir: string) {
       super(dir)
+
+      if (evtConst) {
+        for (const [ evt, listeners ] of evtConst.entries()) {
+          this.eventMap.set(evt, listeners)
+        }
+
+        // clean up
+        evtConst.clear()
+      }
+
+      if (evtProto) {
+        for (const [ evt, listeners ] of evtProto.entries()) {
+          this.eventMap.set(evt, listeners)
+        }
+
+        // clean up
+        evtProto.clear()
+      }
+
+      // clean up
+      eventMap.delete(Clazz)
+      eventMap.delete(Clazz.prototype)
+    }
+
+    emit (event: string, ...args: any[]): this {
+      const listeners = this.eventMap.get(event)
+      if (!listeners) return this
+      
+      if (listeners.length === 0) {
+        this.eventMap.delete(event)
+        return this
+      }
+
+      listeners.forEach((listener) => {
+        listener.call(this, ...args)
+      })
+      return this
     }
   }
+  return PluginWrapper
 }

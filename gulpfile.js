@@ -3,7 +3,7 @@ const mri = require('mri')
 
 global.ROOT_DIR = __dirname
 
-if (!process.env.NODE_ENV) {
+if (!process.env.NODE_ENV || !process.env.TRAVIS) {
   process.env.NODE_ENV = 'development'
   process.env.production = false
 } else {

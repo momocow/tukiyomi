@@ -1,6 +1,6 @@
 import { app } from 'electron'
 import { stringify } from '@iarna/toml'
-import { outputFile } from 'fs-extra'
+import { outputFile, outputFileSync } from 'fs-extra'
 import _get from 'lodash/get'
 import _set from 'lodash/set'
 import _merge from 'lodash/merge'
@@ -8,10 +8,13 @@ import { join, resolve, dirname } from 'path'
 import { EventEmitter } from 'events'
 import { findAndReadConfig } from 'read-config-file'
 
-import { appLogger } from '../logging/loggers'
+import { getLogger } from '../logging/loggers'
+import Logger from '@grass/grass-logger'
 
 export default class Config<T extends Object> extends EventEmitter {
   private _data: T
+  private logger: Logger
+  public filepath: string = ''
   public hasInit: boolean = false
 
   /**
@@ -21,14 +24,15 @@ export default class Config<T extends Object> extends EventEmitter {
     super()
 
     this._data = defaultData
+    this.logger = getLogger(`Config/${filename}`)
   }
 
   async load () {
+    this.logger.debug('Config: start loading.')
+
     const configRoot = join(app.getPath('userData'), 'Configs')
     const absPath = resolve(configRoot, this.filename)
     const dir = dirname(absPath)
-
-    appLogger.debug('Config: using file "%s" in directory, "%s"', this.filename, dir)
 
     try {
       const confObj = await findAndReadConfig<T>({
@@ -38,13 +42,18 @@ export default class Config<T extends Object> extends EventEmitter {
         packageMetadata: null
       })
 
-      if (confObj) {
+      if (confObj && confObj.configFile) {
+        this.logger.debug('Config: using config file "%s".', confObj.configFile)
+        this.filepath = confObj.configFile
+
         this._data = _merge({}, this._data, confObj.result)
         this.emit('load')
       } else {
         // config not found
-        outputFile(join(dir, 'app.config.toml'), stringify(this._data))
+        this.filepath = join(dir, 'app.config.toml')
+        this.logger.debug('Config: init new configuration. (%s)', this.filepath)
       }
+      await this.flush()
     } catch (err) {
       this.emit('error', err)
     } finally {
@@ -68,5 +77,13 @@ export default class Config<T extends Object> extends EventEmitter {
 
   toJSON () {
     return this._data
+  }
+
+  async flush () {
+    await outputFile(this.filepath, stringify(this._data), 'utf8')
+  }
+
+  flushSync () {
+    outputFileSync(this.filepath, stringify(this._data), 'utf8')
   }
 }

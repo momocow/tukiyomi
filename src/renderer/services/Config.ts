@@ -19,21 +19,25 @@ export default class Config<T extends object> extends EventEmitter implements IS
    */
   constructor (public namespace: string) {
     super()
-
-    service<T>('config', [ namespace ])
-      .then((result) => {
-        appLogger.debug('Config "%s" is loaded.', namespace)
-        this._data = result
-
-        this.emit('load')
-        store.commit('config/load', {
-          namespace,
-          config: this._data
-        })
-      })
     
     subscribe(`config.change[${namespace}]`, (k: string, n: any) => {
       this.set(k, n)
+    })
+
+    this.init()
+  }
+
+  async init () {
+    // TODO maybe use sync service if renderer is started right after config.ready is published?
+    const result = await service<T>(this.service, [ this.namespace ])
+
+    appLogger.debug('Config "%s" is loaded.', this.namespace)
+    this._data = result
+
+    this.emit('load')
+    store.commit('config/load', {
+      namespace: this.namespace,
+      config: this._data
     })
   }
 
@@ -43,6 +47,8 @@ export default class Config<T extends object> extends EventEmitter implements IS
 
   set (key: string, value: any): void {
     if (!this._data) return
+
+    // TODO sync back to main process
     
     const oldVal = this.get(key)
     if (typeof key === 'string' && oldVal !== value) {

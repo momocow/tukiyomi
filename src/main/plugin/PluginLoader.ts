@@ -1,5 +1,4 @@
 import {
-  ensureDir,
   ensureDirSync,
   copyFileSync,
   removeSync,
@@ -7,8 +6,9 @@ import {
  } from 'fs-extra'
 import { EventEmitter } from 'events'
 import { join } from 'path'
-import { NodeVM } from 'vm2'
+import { NodeVM, VMError } from 'vm2'
 import { ExecFileOptions } from 'child_process'
+import _pick from 'lodash/pick'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
 
@@ -26,35 +26,39 @@ interface PluginMeta {
   name: string,
   main: string,
   version: string,
-  description: string,
-  keywords: string[],
-  author: string | { name: string, email: string },
-  license: string,
-  dependencies: {[k: string]: string},
+  description?: string,
+  keywords?: string[],
+  author?: string | { name: string, email: string },
+  license?: string,
+  dependencies?: {[k: string]: string},
+
+  // insert by loader
   displayName: string,
-  dataRoot: string
+  dataRoot: string,
+  options?: TukiYomi.Plugin.PluginOptions
 }
 
 export default class PluginLoader extends EventEmitter {
   private readonly _pkgJson: string
-  private readonly _pluginInsts: Map<string, Object> = new Map()
+  private readonly _pluginInsts: Map<string, TukiYomi.PluginWrapper> = new Map()
   private readonly _pluginStates: WeakMap<Object, PluginMeta> = new WeakMap()
-  private readonly logger = getLogger('PluginLoader')
+
+  public static readonly logger = getLogger('PluginLoader')
 
   constructor (
-    public readonly path: string = join(APP_DIR, 'plugins'),
-    public readonly registry: string = 'https://registry.npmjs.org'
+    public path: string = join(APP_DIR, 'plugins'),
+    public registry: string = 'https://registry.npmjs.org'
   ) {
     super()
 
     this._pkgJson = join(this.path, 'package.json')
 
-    this.logger.debug('PluginLoader: (Init) Using plugin root "%s".', this.path)
-    this.logger.debug('PluginLoader: (Init) using registry "%s".', this.registry)
+    PluginLoader.logger.debug('PluginLoader: (Init) Using plugin root "%s".', this.path)
+    PluginLoader.logger.debug('PluginLoader: (Init) using registry "%s".', this.registry)
   }
 
   _execBin (args: string[], options?: ExecFileOptions) {
-    this.logger.debug('> yarn %s', args.join(' '))
+    PluginLoader.logger.debug('> yarn %s', args.join(' '))
     return yarn([
       ...args,
       '--cache-folder',
@@ -68,7 +72,7 @@ export default class PluginLoader extends EventEmitter {
     })
   }
 
-  init () {
+  initDir () {
     ensureDirSync(this.path)
     if (!existsSync(this._pkgJson)) {
       copyFileSync(join(__static, 'plugins-package.json'), this._pkgJson)
@@ -77,7 +81,7 @@ export default class PluginLoader extends EventEmitter {
 
   resetHard () {
     removeSync(this.path)
-    this.init()
+    this.initDir()
   }
 
   listLoaded () {
@@ -161,23 +165,54 @@ export default class PluginLoader extends EventEmitter {
   async install (plugin: string) {
 
   }
+  
+  initAll () {
+    eventBus.emit('init')
+  }
 
-  async load () {
-    // yarn install --check-files
-    await this._execBin([
-      'install',
-      '--check-files'
-    ])
+  destroyAll () {
+    eventBus.emit('destroy')
+  }
 
-    this.listInstalled().forEach(async (plugin: string) => {
+  async reload () {
+    // plugin state map should also be cleared since it is a WeakMap
+    this._pluginInsts.clear()
+    return this.load(false)
+  }
+
+  async load (checkFiles: boolean = true) {
+    if (checkFiles) {
+      // yarn install --check-files
+      await this._execBin([
+        'install',
+        '--check-files'
+      ])
+    }
+
+    this.listInstalled().forEach((plugin: string) => {
+      PluginLoader.logger.debug('Trying to load the plugin, "%s".', plugin)
+
       const pluginDir = join(this.path, 'node_modules', plugin)
 
-      const meta = this.inspectLocal(plugin)
+      const inspectResult = this.inspectLocal(plugin)
+      const meta = <PluginMeta>_pick(
+        inspectResult,
+        'name',
+        'main',
+        'version',
+        'description',
+        'keywords',
+        'author',
+        'license',
+        'dependencies'
+      )
 
-      if (meta.main) {
-        const pluginEntry = join(pluginDir, meta.main)
+      if (meta.name && meta.main && meta.version) {
         const displayName = normalizePluginName(plugin)
         const dataRoot = join(this.path, displayName)
+
+        meta.displayName = displayName
+        meta.dataRoot = dataRoot
 
         const pluginLogger = getPluginLogger(dataRoot, displayName)
   
@@ -190,7 +225,8 @@ export default class PluginLoader extends EventEmitter {
             eventBus
           },
           require: {
-            external: true
+            external: true,
+            root: pluginDir
           }
         })
           .on('console.log', (msg, ...args) => {
@@ -209,15 +245,30 @@ export default class PluginLoader extends EventEmitter {
             pluginLogger.error(msg, ...args)
           })
 
-        const startPlugin = `
-          const Plugini = require("${pluginDir}").default
-          module.exports = new Plugin("${dataRoot}")
-        `
-        const instance: Object = vm.run(startPlugin, pluginEntry)
-  
-        this._pluginInsts.set(plugin, instance)
-        this._pluginStates.set(instance, meta)
+        try {
+          const Plugin = vm.require(plugin)
+          const instance: TukiYomi.PluginWrapper = new Plugin(dataRoot)
+          meta.options = instance.options
+
+          this._pluginInsts.set(plugin, instance)
+          this._pluginStates.set(instance, meta)
+        } catch (e) {
+          if (e instanceof VMError) {
+            PluginLoader.logger.warn('Plugin exception occurs!')
+            PluginLoader.logger.warn('%O', e)
+          }
+          throw e
+        }
+        this.emit('load', plugin, meta)
       }
     })
   }
 }
+
+process.on('uncaughtException', (e) => {
+  if (e instanceof VMError) {
+    PluginLoader.logger.warn('Plugin exception occurs!')
+    PluginLoader.logger.warn('%O', e)
+    return
+  }
+})

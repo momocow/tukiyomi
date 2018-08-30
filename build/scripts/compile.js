@@ -71,13 +71,17 @@ function _runCompiler (conf) {
         colors: true
       }))
 
+      // const info = stats.toJson()
+
       if (stats.hasErrors()) {
+        // console.error(info.errors)
         throw new Error('Error occured during Webpack compilation.')
       }
 
       if (
         (process.argv.includes('--strict') || process.env.NODE_ENV === 'production') &&
         stats.hasWarnings()) {
+        // console.error(info.warnings)
         throw new Error('There are still Webpack compilation warnings.')
       }
     })
