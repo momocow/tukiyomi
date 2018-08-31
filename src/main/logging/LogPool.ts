@@ -1,10 +1,10 @@
 import { appendFile, appendFileSync, ensureFile, ensureFileSync } from 'fs-extra'
-import { app } from 'electron'
 import { resolve } from 'path'
 import RollingArray from '@grass/grass-rolling-array'
 import Logger from '@grass/grass-logger'
 
 import { logRotate, logRotateSync } from './log-rotate'
+import { LOGS_DIR } from '../env'
 
 import { MAX_LOGGING_BUF_LEN } from '../../common/config'
 
@@ -28,7 +28,7 @@ export default class LogPool {
 
   constructor (public logfile: string) {
     this._pool.on('overflow', async (victims: (string|Timestamp)[]) => {
-      const absPath = resolve(app.getPath('logs'), this.logfile)
+      const absPath = resolve(LOGS_DIR, this.logfile)
       await ensureFile(absPath)
       await logRotate(absPath)
       return appendFile(
@@ -42,7 +42,7 @@ export default class LogPool {
 
   async flush () {
     if (this._pool.length > 0) {
-      const absPath = resolve(app.getPath('logs'), this.logfile)
+      const absPath = resolve(LOGS_DIR, this.logfile)
       await ensureFile(absPath)
       await logRotate(absPath)
       await appendFile(
@@ -56,10 +56,8 @@ export default class LogPool {
   }
 
   flushSync () {
-    console.log('flushing')
     if (this._pool.length > 0) {
-      const absPath = resolve(app.getPath('logs'), this.logfile)
-      console.log(absPath)
+      const absPath = resolve(LOGS_DIR, this.logfile)
       ensureFileSync(absPath)
       logRotateSync(absPath)
       appendFileSync(

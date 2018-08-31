@@ -28,3 +28,5 @@ export const ROOT_DIR = RUN_IN_REPO ? join(__dirname, '..', '..') : dirname(app.
 export const ASSETS_DIR = RUN_IN_REPO ? join(ROOT_DIR, 'assets') : join(ASAR_PATH, 'assets')
 export const PLUGINS_DIR = join(ROOT_DIR, 'plugins')
 export const STATIC_DIR = RUN_IN_REPO ? join(ROOT_DIR, 'static') : __static
+export const LOGS_DIR = join(app.getPath('userData'), 'logs')
+export const CONFIGS_DIR = join(app.getPath('userData'), 'configs')

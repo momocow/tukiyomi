@@ -40,7 +40,6 @@ export async function logRotate (file: string) {
   if (size >= MAX_LOGFILE_SIZE) {
     await unshiftRotationByPostfix(absPath)
   }
-  console.log('[%s] Log rotating: stop', new Date())
 }
 
 export function logRotateSync (file: string) {
@@ -50,5 +49,4 @@ export function logRotateSync (file: string) {
   if (size >= MAX_LOGFILE_SIZE) {
     unshiftRotationByPostfixSync(absPath)
   }
-  console.log('[%s] Log rotating: stop', new Date())
 }
