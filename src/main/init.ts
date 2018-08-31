@@ -6,7 +6,7 @@ import { VMError } from 'vm2'
 import * as Sentry from '@sentry/electron'
 
 import { SENTRY_DSN } from '../common/config'
-import { poolMap, appLogger, appPool } from './logging/loggers'
+import { poolMap, appLogger, appPool, loggerMap } from './logging/loggers'
 import { IS_RELEASE, RELEASE, IS_DEV, ASSETS_DIR } from './env'
 import { registerService, registerCommand, publish } from './ipc'
 import { configMap, appConfig } from './configuring/configs'
@@ -83,6 +83,18 @@ process.on('SIGTERM', function () {
 })
 
 app.on('will-quit', function (e) {
+  console.info('Has quit! Cleaning up soon...')
+
+  pluginLoader.stopAll()
+  pluginLoader.clear()
+
+  loggerMap.clear()
+
+  configMap.forEach((config) => {
+    config.reset(true)
+  })
+  configMap.clear()
+
   poolMap.forEach(pool => {
     pool.timestamp('END')
     pool.flushSync()

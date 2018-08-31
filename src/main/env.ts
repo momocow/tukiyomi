@@ -19,16 +19,12 @@ export const IS_WIN32 = platform() === 'win32'
 export const RELEASE: string = safeCall<string>(fs.readFileSync, [ 'RELEASE', 'utf8' ], '')
 export const IS_RELEASE: boolean = RELEASE.length > 0
 
-/**
- * For a packaged bin, it is right inside the app.asar
- * For project development app, it is the root where package.json is.
- */
-export const APP_DIR = app.getAppPath()
+const ASAR_PATH: string = app.getAppPath()
 
 /**
  * It is out-most directory
  */
-export const ROOT_DIR = RUN_IN_REPO ? APP_DIR : dirname(app.getPath('exe'))
-export const ASSETS_DIR = join(APP_DIR, 'assets')
+export const ROOT_DIR = RUN_IN_REPO ? join(__dirname, '..', '..') : dirname(app.getPath('exe'))
+export const ASSETS_DIR = RUN_IN_REPO ? join(ROOT_DIR, 'assets') : join(ASAR_PATH, 'assets')
 export const PLUGINS_DIR = join(ROOT_DIR, 'plugins')
-export const STATIC_DIR = START_FROM_NPM ? join(ROOT_DIR, 'static') : __static
+export const STATIC_DIR = RUN_IN_REPO ? join(ROOT_DIR, 'static') : __static

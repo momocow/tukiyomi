@@ -11,10 +11,9 @@ import { ExecFileOptions } from 'child_process'
 import _pick from 'lodash/pick'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
+import { getConfig } from '../configuring/configs'
 
-import { APP_DIR, STATIC_DIR, IS_WIN32 } from '../env'
-
-import eventBus from './EventBus'
+import { PLUGINS_DIR, STATIC_DIR, IS_WIN32 } from '../env'
 
 import {
   yarn,
@@ -35,7 +34,6 @@ interface PluginMeta {
 
   // insert by loader
   displayName: string,
-  dataRoot: string,
   meta?: TukiYomi.Plugin.PluginOptions
 }
 
@@ -47,15 +45,15 @@ export default class PluginLoader extends EventEmitter {
   public static readonly logger = getLogger('PluginLoader')
 
   constructor (
-    public path: string = join(APP_DIR, 'plugins'),
+    public path: string = PLUGINS_DIR,
     public registry: string = 'https://registry.npmjs.org'
   ) {
     super()
 
     this._pkgJson = join(this.path, 'package.json')
 
-    PluginLoader.logger.debug('PluginLoader: (Init) Using plugin root "%s".', this.path)
-    PluginLoader.logger.debug('PluginLoader: (Init) using registry "%s".', this.registry)
+    PluginLoader.logger.debug('(Init) Using plugin root "%s".', this.path)
+    PluginLoader.logger.debug('(Init) using registry "%s".', this.registry)
   }
 
   _execBin (args: string[], options?: ExecFileOptions) {
@@ -74,8 +72,10 @@ export default class PluginLoader extends EventEmitter {
   }
 
   initDir () {
+    PluginLoader.logger.debug('Ensuring plugin directory "%s"', this.path)
     ensureDirSync(this.path)
     if (!existsSync(this._pkgJson)) {
+      PluginLoader.logger.debug('Creating package.json for runtime plugins. (%s)', this._pkgJson)
       copyFileSync(join(STATIC_DIR, 'plugins-package.json'), this._pkgJson)
     }
   }
@@ -105,18 +105,44 @@ export default class PluginLoader extends EventEmitter {
   async install (plugin: string) {
 
   }
-  
-  initAll () {
-    eventBus.emit('init')
+
+  stop (plugin: string): this {
+    const pluginInstance = this._pluginInsts.get(plugin)
+    if (pluginInstance) {
+      pluginInstance.emit('stop')
+    }
+    return this
   }
 
-  destroyAll () {
-    eventBus.emit('destroy')
+  stopAll () {
+    this.broadcast('stop')
+  }
+
+  send (plugin: string, event: string, ...args: any[]): this {
+    const pluginInstance = this._pluginInsts.get(plugin)
+    if (pluginInstance) {
+      pluginInstance.emit(event, ...args)
+    }
+    return this
+  }
+
+  broadcast (event: string, ...args: any[]): this {
+    PluginLoader.logger.debug(
+      'Broadcast "%s" (%s)', event, args.map(v => JSON.stringify(v)).join(', '))
+    this._pluginInsts.forEach((instance) => {
+      instance.emit(event, ...args)
+    })
+    return this
+  }
+
+  clear () {
+    // plugin state map should also be cleared since it is a WeakMap
+    this._pluginInsts.clear()
+    PluginLoader.logger.debug('Plugin instances are cleared')
   }
 
   async reload () {
-    // plugin state map should also be cleared since it is a WeakMap
-    this._pluginInsts.clear()
+    this.clear()
     return this.load(false)
   }
 
@@ -131,7 +157,7 @@ export default class PluginLoader extends EventEmitter {
       ])
     }
 
-    this.listInstalled().forEach((plugin: string, index) => {
+    this.listInstalled().forEach(async (plugin: string, index) => {
       PluginLoader.logger.debug('Plugin (%d: %s): start loading', index, plugin)
 
       const pluginDir = join(this.path, 'node_modules', plugin)
@@ -156,44 +182,44 @@ export default class PluginLoader extends EventEmitter {
 
       if (meta.name && meta.main && meta.version) {
         const displayName = normalizePluginName(plugin)
-        const dataRoot = join(this.path, displayName)
 
         meta.displayName = displayName
-        meta.dataRoot = dataRoot
 
-        const pluginLogger = getPluginLogger(dataRoot, displayName)
+        const pluginLogger = getPluginLogger(plugin)
   
         const vm = new NodeVM({
           console: 'redirect',
-          sandbox: {
-            setTimeout,
-            setInterval,
-            setImmediate
-          },
           require: {
             external: true,
-            root: pluginDir
+            builtin: [ 'events' ],
+            root: join(this.path, 'node_modules'),
+            context: 'sandbox'
           }
         })
           .on('console.log', (msg, ...args) => {
-            console.log('!!! ' + msg, ...args)
             pluginLogger.log(msg, ...args)
           })
           .on('console.info', (msg, ...args) => {
-            console.log('!!! ' + msg, ...args)
             pluginLogger.info(msg, ...args)
           })
-          .on('console.debug', (msg, ...args) => {
-            pluginLogger.debug(msg, ...args)
-          })
+          // TODO https://github.com/patriksimek/vm2/issues/152
+          // .on('console.debug', (msg, ...args) => {
+          //   console.log('!!! ' + msg, ...args)
+          //   pluginLogger.info(msg, ...args)
+          // })
           .on('console.warn', (msg, ...args) => {
-            console.log('!!! ' + msg, ...args)
             pluginLogger.warn(msg, ...args)
           })
           .on('console.error', (msg, ...args) => {
-            console.log('!!! ' + msg, ...args)
             pluginLogger.error(msg, ...args)
           })
+        try {
+          vm.require(
+            IS_WIN32? pluginDir.replace(/\\/g, '\\\\') : pluginDir
+          )
+        } catch (e) {
+          console.log('Error: %o', e)
+        }
 
         try {
           PluginLoader.logger.debug('Plugin (%d: %s): Instantiating', index, plugin)
@@ -202,9 +228,17 @@ export default class PluginLoader extends EventEmitter {
             IS_WIN32? pluginDir.replace(/\\/g, '\\\\') : pluginDir
           )
 
-          const instance: TukiYomi.PluginWrapper = new Plugin(dataRoot)
+          const instance: TukiYomi.PluginWrapper = new Plugin()
           meta.meta = instance.meta
           PluginLoader.logger.debug('Plugin (%d: %s): options %O', index, plugin, instance.meta)
+
+          const defaultConfig = typeof instance.meta === 'object' ? instance.meta.default : undefined
+          const pluginConfig = getConfig(`plugins/${plugin}`, defaultConfig)
+          await pluginConfig.load()
+
+          // inject config to plugin's sandbox
+          vm.freeze(pluginConfig, 'config')
+          instance.emit('start')
 
           this._pluginInsts.set(plugin, instance)
           this._pluginStates.set(instance, meta)

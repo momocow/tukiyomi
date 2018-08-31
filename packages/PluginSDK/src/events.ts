@@ -15,15 +15,15 @@ function register (target: Object, event: string, listener: Function) {
   evtQueue.push(listener)
 }
 
-export function init (target: any, prop: string, descriptor: PropertyDescriptor) {
+export function start (target: any, prop: string, descriptor: PropertyDescriptor) {
   if (typeof descriptor.value === 'function') {
-    register(target, 'init', descriptor.value)
+    register(target, 'start', descriptor.value)
   }
 }
 
-export function destroy (target: any, prop: string, descriptor: PropertyDescriptor) {
+export function stop (target: any, prop: string, descriptor: PropertyDescriptor) {
   if (typeof descriptor.value === 'function') {
-    register(target, 'destroy', descriptor.value)
+    register(target, 'stop', descriptor.value)
   }
 }
 

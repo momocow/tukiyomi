@@ -1,8 +1,20 @@
-import Config from './Config'
+import { join } from 'path'
 
-const DEFAULT_APP_CONFIG: TukiYomi.AppConfig = require('./defaults/default-app.config.json')
+import Config from './Config'
+import { STATIC_DIR } from '../env'
 
 export const configMap: Map<string, Config<any>> = new Map()
 
-export const appConfig = new Config<TukiYomi.AppConfig>('app.config', DEFAULT_APP_CONFIG)
-configMap.set('app', appConfig)
+export const appConfig = getConfig<TukiYomi.AppConfig>(
+  'app', join(STATIC_DIR, 'app.config.default.json'))
+
+export function getConfig<T> (name: string, defaultJson?: string | T): Config<T> {
+  let config = configMap.get(name)
+  if (!config) {
+    const filename: string = name.endsWith('.config') ? name : (name + '.config')
+    config = new Config<T>(filename, defaultJson)
+    configMap.set(name, config)
+  }
+
+  return config
+}

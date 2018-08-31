@@ -1,5 +1,6 @@
 ///<reference path="./global.d.ts" />
 
+import { EventEmitter } from 'events'
 import { eventMap } from './events'
 
 interface PluginClass<PC extends Object> {
@@ -24,16 +25,36 @@ function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomi.Plugin.Pl
   const evtProto = eventMap.get(Clazz.prototype)
 
   // mixin class with EventEmitter
-  class PluginWrapper extends Clazz {
-    public meta: TukiYomi.Plugin.PluginOptions = options || {}
-    private eventMap: Map<string, Function[]> = new Map()
+  class PluginWrapper extends Clazz implements EventEmitter {
+    // Placeholder Implementations
+    addListener (...args: any[]): this { return this }
+    on (...args: any[]): this { return this }
+    once (...args: any[]): this { return this }
+    prependListener (...args: any[]): this { return this }
+    prependOnceListener (...args: any[]): this { return this }
+    removeListener (...args: any[]): this { return this }
+    off (...args: any[]): this { return this }
+    removeAllListeners (...args: any[]): this { return this }
+    setMaxListeners (...args: any[]): this { return this }
+    getMaxListeners (...args: any[]): number { return NaN }
+    listeners (...args: any[]): Function[] { return [] }
+    rawListeners (...args: any[]): Function[] { return [] }
+    emit (...args: any[]): boolean { return false }
+    eventNames () { return [] }
+    listenerCount () { return 0 }
 
-    constructor (dir: string) {
-      super(dir)
+    // TODO deep clone?
+    public meta: TukiYomi.Plugin.PluginOptions = options || {}
+
+    constructor () {
+      super()
+      EventEmitter.call(this)
 
       if (evtConst) {
         for (const [ evt, listeners ] of evtConst.entries()) {
-          this.eventMap.set(evt, listeners)
+          listeners.forEach((listener) => {
+            this.on(evt, listener)
+          })
         }
 
         // clean up
@@ -42,7 +63,9 @@ function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomi.Plugin.Pl
 
       if (evtProto) {
         for (const [ evt, listeners ] of evtProto.entries()) {
-          this.eventMap.set(evt, listeners)
+          listeners.forEach((listener) => {
+            this.on(evt, listener)
+          })
         }
 
         // clean up
@@ -53,21 +76,16 @@ function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomi.Plugin.Pl
       eventMap.delete(Clazz)
       eventMap.delete(Clazz.prototype)
     }
-
-    emit (event: string, ...args: any[]): this {
-      const listeners = this.eventMap.get(event)
-      if (!listeners) return this
-      
-      if (listeners.length === 0) {
-        this.eventMap.delete(event)
-        return this
-      }
-
-      listeners.forEach((listener) => {
-        listener.call(this, ...args)
-      })
-      return this
-    }
   }
+
+  applyMixins(PluginWrapper, EventEmitter)
   return PluginWrapper
+}
+
+function applyMixins(derivedCtor: any, ...baseCtors: any[]) {
+  baseCtors.forEach(baseCtor => {
+      Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+          derivedCtor.prototype[name] = baseCtor.prototype[name]
+      })
+  })
 }

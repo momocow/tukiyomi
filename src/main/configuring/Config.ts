@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import { stringify } from '@iarna/toml'
-import { outputFile, outputFileSync } from 'fs-extra'
+import { outputFile, outputFileSync, readJsonSync } from 'fs-extra'
+import _cloneDeep from 'lodash/clonedeep'
 import _get from 'lodash/get'
 import _set from 'lodash/set'
 import _merge from 'lodash/merge'
@@ -12,7 +13,8 @@ import { getLogger } from '../logging/loggers'
 import Logger from '@grass/grass-logger'
 
 export default class Config<T extends Object> extends EventEmitter {
-  private _data: T
+  private _data: T | undefined
+  private _default: string | T | undefined
   private logger: Logger
   public filepath: string = ''
   public hasInit: boolean = false
@@ -20,11 +22,13 @@ export default class Config<T extends Object> extends EventEmitter {
   /**
    * @param {string} filename Resolve under `${userData}/Configs`
    */
-  constructor (public filename: string, defaultData: T) {
+  constructor (public filename: string, defaultJson?: string | T) {
     super()
 
-    this._data = defaultData
+    this._default = defaultJson
     this.logger = getLogger(`Config/${filename}`)
+
+    this.reset()
   }
 
   async load () {
@@ -64,10 +68,12 @@ export default class Config<T extends Object> extends EventEmitter {
   get<R> (key: string): R | undefined
   get<R> (key: string, defVal: R): R
   get<R> (key: string, defVal?: R): R | undefined {
-    return _get(this._data, key, defVal)
+    return this.hasInit ? _get(this._data, key, defVal) : undefined
   }
 
   set (key: string, value: any): void {
+    if (!this.hasInit) return
+
     const oldVal = _get(this._data, key)
     if (typeof this._data === 'object' && oldVal !== value) {
       _set(this._data, key, value)
@@ -80,10 +86,28 @@ export default class Config<T extends Object> extends EventEmitter {
   }
 
   async flush () {
-    await outputFile(this.filepath, stringify(this._data), 'utf8')
+    if (this._data) {
+      await outputFile(this.filepath, stringify(this._data), 'utf8')
+    }
   }
 
   flushSync () {
-    outputFileSync(this.filepath, stringify(this._data), 'utf8')
+    if (this._data) {
+      outputFileSync(this.filepath, stringify(this._data), 'utf8')
+    }
+  }
+
+  reset (destroy: boolean = false) {
+    this._data = undefined
+    if (!destroy) {
+      if (typeof this._default === 'string') {
+        this._data = readJsonSync(this._default, {
+          throws: false
+        }) || undefined
+      } else if (typeof this._default === 'object') {
+        this._data = _cloneDeep(this._default)
+      }
+    }
+    this.hasInit = false
   }
 }

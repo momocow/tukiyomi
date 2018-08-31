@@ -14,7 +14,7 @@ declare namespace TukiYomi {
       "child_process.fork"
 
     interface PluginOptions {
-      scopes?: PluginScope[]
+      default?: {[string: string]: any}
     }
   }
 }
