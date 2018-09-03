@@ -1,0 +1,25 @@
+{
+  "name": "@tukiyomi/plugin-network-monitor",
+  "version": "0.0.0",
+  "description": "Monitor the network for development usage.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "node ",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tukiyomi",
+    "tukiyomi-plugin",
+    "development",
+    "network",
+    "monitor"
+  ],
+  "author": "MomoCow",
+  "license": "MIT",
+  "devDependencies": {
+    "semver": "^5.5.1",
+    "typescript": "^3.0.3"
+  }
+}
