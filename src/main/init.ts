@@ -11,6 +11,7 @@ import { IS_RELEASE, RELEASE, IS_DEV, ASSETS_DIR } from './env'
 import { registerService, registerCommand, publish } from './ipc'
 import { configMap, appConfig } from './configuring/configs'
 import pluginLoader from './plugin/loader'
+import { createMainWindow } from './window/MainWindow'
 
 async function main () {
   const loading: Promise<void>[] = []
@@ -30,6 +31,12 @@ async function main () {
   await Promise.all(loading)
 
   // All configs are ready after this line
+
+  if (!app.isReady()) {
+    app.once('ready', createMainWindow)
+  } else {
+    createMainWindow()
+  }
 
   registerService('config', async function (namespace: string, key?: string, defVal?: any) {
     appLogger.debug('Config "%s": fetching', namespace)
@@ -79,6 +86,10 @@ process.on('SIGINT', function () {
 })
 
 process.on('SIGTERM', function () {
+  app.quit()
+})
+
+app.on('window-all-closed', () => {
   app.quit()
 })
 

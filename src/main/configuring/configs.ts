@@ -1,12 +1,12 @@
 import { join } from 'path'
 
 import Config from './Config'
-import { STATIC_DIR } from '../env'
+import { ASSETS_DIR } from '../env'
 
 export const configMap: Map<string, Config<any>> = new Map()
 
 export const appConfig = getConfig<TukiYomi.AppConfig>(
-  'app', join(STATIC_DIR, 'app.config.default.json'))
+  'app', join(ASSETS_DIR, 'configs', 'app.config.default.json'))
 
 export function getConfig<T> (name: string, defaultJson?: string | T): Config<T> {
   let config = configMap.get(name)

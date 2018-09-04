@@ -1,7 +1,8 @@
 {
   "general": {
     "setDMMCookie": true,
-    "disableDMMDialog": true
+    "disableDMMDialog": true,
+    "entranceURL": "http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854"
   },
   "plugin": {
     "registry": "https://registry.npmjs.org"

@@ -4,7 +4,7 @@ import throttle from 'lodash/throttle'
 import applyLoginEnhance from './guest/scripts/loginEnhance'
 import setDMMCookie from './guest/scripts/setDMMCookie'
 import alignGameLayout from './guest/scripts/alignGameLayout'
-import Guest from './guest'
+import Guest from '../../../common/Guest'
 
 import { subscribe } from '../../ipc'
 import { appLogger } from '../../logging/loggers'

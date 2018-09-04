@@ -6,7 +6,6 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "node ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,7 +18,6 @@
   "author": "MomoCow",
   "license": "MIT",
   "devDependencies": {
-    "semver": "^5.5.1",
     "typescript": "^3.0.3"
   }
 }

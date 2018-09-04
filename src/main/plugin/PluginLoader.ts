@@ -157,7 +157,7 @@ export default class PluginLoader extends EventEmitter {
       ])
     }
 
-    this.listInstalled().forEach(async (plugin: string, index) => {
+    const loadingQueue = this.listInstalled().map(async (plugin: string, index) => {
       PluginLoader.logger.debug('Plugin (%d: %s): start loading', index, plugin)
 
       const pluginDir = join(this.path, 'node_modules', plugin)
@@ -255,7 +255,10 @@ export default class PluginLoader extends EventEmitter {
       }
     })
 
-    PluginLoader.logger.info('Loaded plugins: %d', this._pluginInsts.size)
+    Promise.all(loadingQueue)
+      .then(() => {
+        PluginLoader.logger.info('Loaded plugins: %d', this._pluginInsts.size)
+      })
   }
 }
 

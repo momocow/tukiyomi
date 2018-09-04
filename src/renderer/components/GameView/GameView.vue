@@ -19,9 +19,9 @@ import { join } from 'path'
 import { appLogger } from '../../logging/loggers'
 import { IS_DEV, ASSETS_DIR } from '../../env'
 
-import tweakView from './tweakView'
-
 import { KANCOLLE_URL } from '../../../common/config'
+
+import tweakView from './tweakView'
 
 @Component({
   name: 'GameView'
