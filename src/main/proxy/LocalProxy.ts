@@ -6,11 +6,7 @@ import {
 import net, { Socket, AddressInfo } from 'net'
 import url from 'url'
 import request, { Response } from 'request'
-import { promisify } from 'util'
 import { gunzip, inflate } from 'zlib'
-
-const $gunzip = promisify(gunzip)
-const $inflate = promisify(inflate)
 
 import { proxyLogger } from '../logging/loggers'
 
@@ -40,16 +36,42 @@ export class LocalProxy {
         reqOptions.body = bodyBuf
       }
 
-      const remoteReq = request(reqOptions, async (err: Error, response: Response, resBody: Buffer) => {
+      const remoteReq = request(reqOptions, (err: Error, response: Response, resBody: Buffer) => {
         if (err) {
           proxyLogger.error('Error occured when sending request %O', reqOptions)
           proxyLogger.error('%O', err)
           return
         }
 
-        const resBodyStr = await decodeBody(resBody, response.headers["content-encoding"])
-        evtProxy.emitResponse(response.statusCode, response.headers, resBodyStr)
-        evtProxy.emit()
+        const onComplete = (decodedBody: string) => {
+          evtProxy.emitResponse(response.statusCode, response.headers, decodedBody)
+          evtProxy.emit()
+        }
+
+        switch (response.headers["content-encoding"]) {
+          case 'gzip':
+            gunzip(resBody, function (gunzipError, decoded) {
+              if (gunzipError) {
+                proxyLogger.error('Failed to gunzip the response. (%s "%s")', method, url)
+                proxyLogger.error('%O', gunzipError)
+                return
+              }
+              onComplete(decoded.toString())
+            })
+            break
+          case 'deflate':
+            inflate(resBody, function (inflateError, decoded) {
+              if (inflateError) {
+                proxyLogger.error('Failed to inflate the response. (%s "%s")', method, url)
+                proxyLogger.error('%O', inflateError)
+                return
+              }
+              onComplete(decoded.toString())
+            })
+            break;
+          default:
+            onComplete(resBody.toString())
+        }
       })
 
       remoteReq.pipe(res)
@@ -138,20 +160,4 @@ function parseBody (readable: IncomingMessage): Promise<Buffer> {
         resolve(body)
       })
   })
-}
-
-async function decodeBody (body: Buffer, encoding?: string): Promise<string> {
-  let decoded: Buffer
-  switch (encoding) {
-    case 'gzip':
-      decoded = <Buffer>await $gunzip(body)
-      break
-    case 'deflate':
-      decoded = <Buffer>await $inflate(body)
-      break
-    default:
-      decoded = body
-  }
-
-  return decoded.toString()
 }

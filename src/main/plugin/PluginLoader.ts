@@ -9,12 +9,13 @@ import { join } from 'path'
 import { NodeVM, VMError } from 'vm2'
 import { ExecFileOptions } from 'child_process'
 import _pick from 'lodash/pick'
-import { Event } from '@tukiyomi/events/src/index'
+import { Event } from '@tukiyomi/events'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
 import { getConfig } from '../configuring/configs'
+import { mockBuiltins } from './mock-builtin'
 
-import { PLUGINS_DIR, STATIC_DIR, IS_WIN32 } from '../env'
+import { PLUGINS_DIR, STATIC_DIR, IS_WIN32, DATA_DIR } from '../env'
 
 import {
   yarn,
@@ -35,7 +36,10 @@ interface PluginMeta {
 
   // insert by loader
   displayName: string,
-  meta?: TukiYomi.Plugin.PluginOptions
+  meta?: TukiYomi.Plugin.PluginOptions,
+  tukiyomi?: {
+    scopes?: string[]
+  }
 }
 
 export default class PluginLoader extends EventEmitter {
@@ -181,7 +185,8 @@ export default class PluginLoader extends EventEmitter {
         'keywords',
         'author',
         'license',
-        'dependencies'
+        'dependencies',
+        'tukiyomi'
       )
 
       if (meta.name && meta.main && meta.version) {
@@ -190,6 +195,12 @@ export default class PluginLoader extends EventEmitter {
         meta.displayName = displayName
 
         const pluginLogger = getPluginLogger(plugin)
+
+        const env: TukiYomi.Env = {
+          DATA_DIR: join(DATA_DIR, plugin)
+        }
+
+        ensureDirSync(env.DATA_DIR)
   
         const vm = new NodeVM({
           console: 'redirect',
@@ -198,11 +209,17 @@ export default class PluginLoader extends EventEmitter {
             builtin: [
               'events',
               'url',
-              'querystring'
+              'querystring',
+              'path',
+              'util',
+              // mocked
+              'fs'
             ],
             root: join(this.path, 'node_modules'),
-            context: 'sandbox'
-          }
+            context: 'sandbox',
+            mock: mockBuiltins(meta.tukiyomi && meta.tukiyomi.scopes)
+          },
+          sandbox: { env }
         })
           .on('console.log', (msg, ...args) => {
             pluginLogger.log(msg, ...args)

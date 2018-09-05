@@ -22,5 +22,11 @@
   },
   "dependencies": {
     "@tukiyomi/plugin-sdk": "file:../plugin-sdk"
+  },
+  "tukiyomi": {
+    "scopes": [
+      "fs.write",
+      "fs.stat"
+    ]
   }
 }

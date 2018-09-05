@@ -10,5 +10,7 @@ declare module NodeJS {
     i18n: NodeJS.EventEmitter & {
       get<T> (key: string, defaultVal?: T): T
     }
+
+    env: TukiYomi.Env
   }
 }

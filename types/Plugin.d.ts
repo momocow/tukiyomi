@@ -1,4 +1,8 @@
 declare namespace TukiYomi {
+  interface Env {
+    DATA_DIR: string
+  }
+
   namespace Plugin {
     type PluginScope = "dom" |
       "dom.host" |
