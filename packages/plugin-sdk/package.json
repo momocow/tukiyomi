@@ -23,5 +23,7 @@
   "devDependencies": {
     "typescript": "^3.0.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tukiyomi/events": "file:../events"
+  }
 }

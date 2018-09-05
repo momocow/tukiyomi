@@ -1,6 +1,6 @@
 declare namespace TukiYomi {
   interface Event {
-    readonly time: Date
+    readonly timestamp: Date
   }
 
   interface KCApiEvent extends Event {

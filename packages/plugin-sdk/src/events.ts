@@ -31,9 +31,10 @@ interface methodDecorator {
   (target: any, key: string, descriptor: PropertyDescriptor): void
 }
 
-export function on (event: "network.raw.res"): methodDecorator
-export function on (event: "network.raw.req"): methodDecorator
-export function on (event: "network.raw"): methodDecorator
+export function on (event: "network.res"): methodDecorator
+export function on (event: "network.req"): methodDecorator
+export function on (event: "network"): methodDecorator
+export function on (event: "kcsapi"): methodDecorator
 // https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
 export function on (event: string): methodDecorator {
   return function (target: any, key: string, descriptor: PropertyDescriptor) {

@@ -9,6 +9,7 @@ import { join } from 'path'
 import { NodeVM, VMError } from 'vm2'
 import { ExecFileOptions } from 'child_process'
 import _pick from 'lodash/pick'
+import { Event } from '@tukiyomi/events/src/index'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
 import { getConfig } from '../configuring/configs'
@@ -126,11 +127,14 @@ export default class PluginLoader extends EventEmitter {
     return this
   }
 
-  broadcast (event: string, ...args: any[]): this {
-    PluginLoader.logger.debug(
-      'Broadcast "%s"', event)
+  broadcast (event: string, evtObj?: Event): this {
+    // reduce noise
+    if (!event.startsWith('network')) {
+      PluginLoader.logger.debug(
+        'Broadcast "%s" (%s)', event, evtObj ? evtObj.constructor.name : '')
+    }
     this._pluginInsts.forEach((instance) => {
-      instance.emit(event, ...args)
+      instance.emit(event, evtObj)
     })
     return this
   }
@@ -191,7 +195,11 @@ export default class PluginLoader extends EventEmitter {
           console: 'redirect',
           require: {
             external: true,
-            builtin: [ 'events' ],
+            builtin: [
+              'events',
+              'url',
+              'querystring'
+            ],
             root: join(this.path, 'node_modules'),
             context: 'sandbox'
           }

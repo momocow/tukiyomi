@@ -21,6 +21,6 @@
     "typescript": "^3.0.3"
   },
   "dependencies": {
-    "@tukiyomi/plugin-sdk": "file:../PluginSDK"
+    "@tukiyomi/plugin-sdk": "file:../plugin-sdk"
   }
 }

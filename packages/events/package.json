@@ -1,0 +1,20 @@
+{
+  "name": "@tukiyomi/events",
+  "version": "0.0.0",
+  "description": "Event interfaces used to emit event info among plugins.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tukiyomi",
+    "tukiyomi-events",
+    "development"
+  ],
+  "author": "MomoCow",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^3.0.3"
+  }
+}

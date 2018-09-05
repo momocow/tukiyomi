@@ -1,15 +1,20 @@
 import {
   Server,
   createServer,
-  IncomingMessage,
-  IncomingHttpHeaders
+  IncomingMessage
 } from 'http'
 import net, { Socket, AddressInfo } from 'net'
 import url from 'url'
 import request, { Response } from 'request'
+import { promisify } from 'util'
+import { gunzip, inflate } from 'zlib'
+
+const $gunzip = promisify(gunzip)
+const $inflate = promisify(inflate)
+
 import { proxyLogger } from '../logging/loggers'
 
-import bus from './EventBus'
+import { EventProxy } from './EventProxy'
 
 export class LocalProxy {
   private _server: Server = createServer(async (req, res) => {
@@ -17,16 +22,17 @@ export class LocalProxy {
     req.headers['connection'] = 'close'
 
     const { method, url, headers } = req
-    const bodyBuf = await parseBody(req)
-
     
     if (method && url && headers) {
-      const rid = bus.createRequestId(method, url)
-      bus.handleRequest(rid, bodyBuf.length > 0 ? bodyBuf.toString() : '')
+      const evtProxy = new EventProxy()
+      const bodyBuf = await parseBody(req)
+      const body = bodyBuf.toString()
+
+      evtProxy.emitRequest(method, url, headers, body)
 
       const reqOptions: any = {
         method, url, headers,
-        encoding: null,
+        encoding: null, // response body is a buffer
         followRedirect: false
       }
 
@@ -34,19 +40,16 @@ export class LocalProxy {
         reqOptions.body = bodyBuf
       }
 
-      const remoteReq = request(reqOptions, (err: Error, response: Response, resBody: any) => {
+      const remoteReq = request(reqOptions, async (err: Error, response: Response, resBody: Buffer) => {
         if (err) {
           proxyLogger.error('Error occured when sending request %O', reqOptions)
           proxyLogger.error('%O', err)
           return
         }
 
-        if (response.statusCode !== 200) {
-          proxyLogger.warn('Status code is not 200. (%s "%s")', response.method, response.url)
-          return
-        }
-
-        bus.handleResponse(rid, `${resBody}`)
+        const resBodyStr = await decodeBody(resBody, response.headers["content-encoding"])
+        evtProxy.emitResponse(response.statusCode, response.headers, resBodyStr)
+        evtProxy.emit()
       })
 
       remoteReq.pipe(res)
@@ -119,29 +122,6 @@ export class LocalProxy {
     })
     return this
   }
-
-  // private async _handleRequest (req: IncomingMessage) {
-  //   const body = await parseBody(req)
-  //   const bodyStr = body.toString()
-  //   this.emit('request.raw', <MessageMeta>{
-  //     url: req.url,
-  //     headers: req.headers
-  //   }, bodyStr)
-  // }
-
-  // private async _handleResponse (proxyRes: IncomingMessage) {
-  //   const body = await parseBody(proxyRes)
-  //   const bodyStr = body.toString()
-  //   this.emit('request.raw', <MessageMeta>{
-  //     url: proxyRes.url,
-  //     headers: proxyRes.headers
-  //   }, bodyStr)
-  // }
-}
-
-export interface MessageMeta {
-  url: string,
-  headers: IncomingHttpHeaders
 }
 
 function parseBody (readable: IncomingMessage): Promise<Buffer> {
@@ -158,4 +138,20 @@ function parseBody (readable: IncomingMessage): Promise<Buffer> {
         resolve(body)
       })
   })
+}
+
+async function decodeBody (body: Buffer, encoding?: string): Promise<string> {
+  let decoded: Buffer
+  switch (encoding) {
+    case 'gzip':
+      decoded = <Buffer>await $gunzip(body)
+      break
+    case 'deflate':
+      decoded = <Buffer>await $inflate(body)
+      break
+    default:
+      decoded = body
+  }
+
+  return decoded.toString()
 }
