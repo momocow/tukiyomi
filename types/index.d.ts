@@ -3,7 +3,7 @@ declare const __static: string
 
 declare namespace TukiYomi {
   interface AppConfig {
-    general?: {
+    misc?: {
       setDMMCookie?: boolean,
       disableDMMDialog?: boolean
     }

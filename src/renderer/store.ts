@@ -8,7 +8,7 @@ const config: Module<object, object> = {
   namespaced: true,
   state: {
     app: {
-      general: {
+      misc: {
         setDMMCookie: true,
         disableDMMDialog: true
       }

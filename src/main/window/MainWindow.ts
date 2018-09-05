@@ -1,10 +1,12 @@
 import WindowKeeper from 'electron-window-state'
 import { BrowserWindow, shell } from 'electron'
 
-import { GUEST_URL_WHITELIST } from '../../common/config'
+import { GUEST_URL_WHITELIST, KANCOLLE_URL } from '../../common/config'
 
 import { appLogger } from '../logging/loggers'
-// import { appConfig } from '../configuring/configs'
+import { appConfig } from '../configuring/configs'
+
+import proxy from '../proxy/proxies'
 
 import { IS_DEV } from '../env'
 import { publish } from '../ipc'
@@ -30,11 +32,15 @@ export function createMainWindow () {
   winState.manage(window)
   window.setMenu(null)
 
-  if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
-    window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
-  } else {
-    window.loadFile(IS_DEV ? 'dist/renderer/index.html' : 'index.html')
-  }
+  proxy.listen(function () {
+    if (!window) return
+
+    if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
+      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
+    } else {
+      window.loadFile(IS_DEV ? 'dist/renderer/index.html' : 'index.html')
+    }
+  })
 
   if (IS_DEV) {
     window.webContents.openDevTools({
@@ -78,8 +84,19 @@ export function createMainWindow () {
       shell.openExternal(url)
     })
 
-    gameview.on('dom-ready', function () {
-      
+    gameview.session.setProxy({
+      proxyRules: `127.0.0.1:${proxy.port()}`,
+      proxyBypassRules: '<local>,*.google-analytics.com,*.doubleclick.net',
+      pacScript: ''
+    }, function () {
+      const entranceURL = appConfig.get('misc.entranceURL', KANCOLLE_URL)
+      gameview.loadURL(entranceURL, {
+        userAgent: gameview.getUserAgent()
+          .replace(/tukiyomi\/\d+\.\d+\.\d+/, '')
+          .replace(/Electron\/\d+\.\d+\.\d+/, '')
+          .replace(/ +/g, ' ')
+      })
+      gameview.session.setUserAgent(gameview.session.getUserAgent(), 'ja-JP')
     })
   })
 

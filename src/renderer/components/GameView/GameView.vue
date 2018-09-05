@@ -3,7 +3,7 @@
     <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
     <webview
       ref="gameview"
-      :src="src"
+      src="about:blank"
       :preload="preload"
       disablewebsecurity
       webpreferences="zoomFactor=1">

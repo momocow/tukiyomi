@@ -17,18 +17,25 @@ function register (target: Object, event: string, listener: Function) {
 
 export function start (target: any, prop: string, descriptor: PropertyDescriptor) {
   if (typeof descriptor.value === 'function') {
-    register(target, 'start', descriptor.value)
+    register(target, 'app.start', descriptor.value)
   }
 }
 
 export function stop (target: any, prop: string, descriptor: PropertyDescriptor) {
   if (typeof descriptor.value === 'function') {
-    register(target, 'stop', descriptor.value)
+    register(target, 'app.stop', descriptor.value)
   }
 }
 
+interface methodDecorator {
+  (target: any, key: string, descriptor: PropertyDescriptor): void
+}
+
+export function on (event: "network.raw.res"): methodDecorator
+export function on (event: "network.raw.req"): methodDecorator
+export function on (event: "network.raw"): methodDecorator
 // https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
-export function on (event: string) {
+export function on (event: string): methodDecorator {
   return function (target: any, key: string, descriptor: PropertyDescriptor) {
     if (typeof descriptor.value === 'function') {
       register(target, event, descriptor.value)

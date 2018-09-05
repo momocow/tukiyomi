@@ -109,13 +109,13 @@ export default class PluginLoader extends EventEmitter {
   stop (plugin: string): this {
     const pluginInstance = this._pluginInsts.get(plugin)
     if (pluginInstance) {
-      pluginInstance.emit('stop')
+      pluginInstance.emit('app.stop')
     }
     return this
   }
 
   stopAll () {
-    this.broadcast('stop')
+    this.broadcast('app.stop')
   }
 
   send (plugin: string, event: string, ...args: any[]): this {
@@ -128,7 +128,7 @@ export default class PluginLoader extends EventEmitter {
 
   broadcast (event: string, ...args: any[]): this {
     PluginLoader.logger.debug(
-      'Broadcast "%s" (%s)', event, args.map(v => JSON.stringify(v)).join(', '))
+      'Broadcast "%s"', event)
     this._pluginInsts.forEach((instance) => {
       instance.emit(event, ...args)
     })
@@ -238,7 +238,7 @@ export default class PluginLoader extends EventEmitter {
 
           // inject config to plugin's sandbox
           vm.freeze(pluginConfig, 'config')
-          instance.emit('start')
+          instance.emit('app.start')
 
           this._pluginInsts.set(plugin, instance)
           this._pluginStates.set(instance, meta)
