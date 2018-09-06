@@ -15,7 +15,7 @@ import { getLogger, getPluginLogger } from '../logging/loggers'
 import { getConfig } from '../configuring/configs'
 import { mockBuiltins } from './mock-builtin'
 
-import { PLUGINS_DIR, STATIC_DIR, IS_WIN32, DATA_DIR } from '../env'
+import { PLUGINS_DIR, ASSETS_DIR, IS_WIN32, DATA_DIR } from '../env'
 
 import {
   yarn,
@@ -81,7 +81,7 @@ export default class PluginLoader extends EventEmitter {
     ensureDirSync(this.path)
     if (!existsSync(this._pkgJson)) {
       PluginLoader.logger.debug('Creating package.json for runtime plugins. (%s)', this._pkgJson)
-      copyFileSync(join(STATIC_DIR, 'plugins-package.json'), this._pkgJson)
+      copyFileSync(join(ASSETS_DIR, 'templates', 'plugins-package.json'), this._pkgJson)
     }
   }
 
