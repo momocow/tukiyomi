@@ -13,7 +13,10 @@ import { Event } from '@tukiyomi/events'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
 import { getConfig } from '../configuring/configs'
-import { mockBuiltins } from './mock-builtin'
+
+import Guest from '../../common/Guest'
+import { gameview } from '../window/MainWindow'
+import { mockBuiltins } from './sandbox/mock-builtin'
 
 import { PLUGINS_DIR, ASSETS_DIR, IS_WIN32, DATA_DIR } from '../env'
 
@@ -23,6 +26,8 @@ import {
   normalizePluginName,
   validateLocalPlugin
 } from './plugin-utils'
+
+import { authorize } from './scope-utils'
 
 interface PluginMeta {
   name: string,
@@ -196,12 +201,29 @@ export default class PluginLoader extends EventEmitter {
 
         const pluginLogger = getPluginLogger(plugin)
 
+        // prepare plugin env
         const env: TukiYomi.Env = {
           DATA_DIR: join(DATA_DIR, plugin)
         }
-
         ensureDirSync(env.DATA_DIR)
   
+        // prepare plugin sandbox
+        const sandbox: any = { env }
+        if (meta.tukiyomi && meta.tukiyomi.scopes) {
+          // let canvasApiEnabled = false
+          // if (authorize(meta.tukiyomi.scopes, 'canvas.context')) {
+          //   canvas.allowContext()
+          //   canvasApiEnabled = true
+          // }
+          // if (authorize(meta.tukiyomi.scopes, 'canvas.misc')) {
+          //   canvas.allowMisc()
+          //   canvasApiEnabled = true
+          // }
+          // if (canvasApiEnabled) {
+          //   sandbox.canvas = canvas
+          // }
+        }
+
         const vm = new NodeVM({
           console: 'redirect',
           require: {
@@ -219,7 +241,7 @@ export default class PluginLoader extends EventEmitter {
             context: 'sandbox',
             mock: mockBuiltins(meta.tukiyomi && meta.tukiyomi.scopes)
           },
-          sandbox: { env }
+          sandbox
         })
           .on('console.log', (msg, ...args) => {
             pluginLogger.log(msg, ...args)

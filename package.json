@@ -67,7 +67,6 @@
     "@sentry/electron": "^0.8.1",
     "@tukiyomi/events": "file:packages/events",
     "@types/http-proxy": "^1.16.2",
-    "electron-ipc-stream": "^0.2.0",
     "electron-window-state": "^4.1.1",
     "lodash": "^4.17.10",
     "read-config-file": "^3.1.2",

@@ -12,5 +12,7 @@ declare module NodeJS {
     }
 
     env: TukiYomi.Env
+
+    canvas: HTMLCanvasElement
   }
 }

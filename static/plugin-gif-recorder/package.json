@@ -1,7 +1,7 @@
 {
-  "name": "@tukiyomi/plugin-network-monitor",
+  "name": "@tukiyomi/plugin-gif-recorder",
   "version": "0.0.0",
-  "description": "Monitor the network for development usage.",
+  "description": "Record the game canvas animation as GIF files.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,9 +11,8 @@
   "keywords": [
     "tukiyomi",
     "tukiyomi-plugin",
-    "development",
-    "network",
-    "monitor"
+    "gif",
+    "canvas"
   ],
   "author": "MomoCow",
   "license": "MIT",
@@ -26,7 +25,8 @@
   "tukiyomi": {
     "scopes": [
       "fs.write",
-      "fs.stat"
+      "fs.stat",
+      "dom.guest"
     ]
   }
 }

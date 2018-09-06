@@ -15,51 +15,56 @@ const HOST_URL_WHITELIST = [
   `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`
 ]
 
+export let mainWindow: BrowserWindow | null = null
+export let gameview: Electron.WebContents | null = null
+
 export function createMainWindow () {
+  if (mainWindow) return
+
   const winState = WindowKeeper({
     defaultWidth: 1000,
     defaultHeight: 600
   })
 
   const { x, y, width, height } = winState
-  
-  let window: BrowserWindow | null = new BrowserWindow({
+
+  mainWindow = new BrowserWindow({
     x, y, width, height,
     minWidth: 500,
     minHeight: 300
   })
 
-  winState.manage(window)
-  window.setMenu(null)
+  winState.manage(mainWindow)
+  mainWindow.setMenu(null)
 
   proxy.listen(function () {
-    if (!window) return
+    if (!mainWindow) return
 
     if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
-      window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
+      mainWindow.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
     } else {
-      window.loadFile(IS_DEV ? 'dist/renderer/index.html' : 'index.html')
+      mainWindow.loadFile(IS_DEV ? 'dist/renderer/index.html' : 'index.html')
     }
   })
 
   if (IS_DEV) {
-    window.webContents.openDevTools({
+    mainWindow.webContents.openDevTools({
       mode: "undocked"
     })
   }
 
-  window.on('resize', function () {
-    if (window) {
-      const [ width, height ] = window.getSize()
+  mainWindow.on('resize', function () {
+    if (mainWindow) {
+      const [ width, height ] = mainWindow.getSize()
       publish('window-resize', width, height)
     }
   })
 
-  window.on('closed', () => {
-    window = null
+  mainWindow.on('closed', () => {
+    mainWindow = null
   })
 
-  window.webContents.on('will-navigate', (e, url) => {
+  mainWindow.webContents.on('will-navigate', (e, url) => {
     if (HOST_URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
       appLogger.debug('Whitelist validated: ', url)
       return
@@ -71,8 +76,10 @@ export function createMainWindow () {
     shell.openExternal(url)
   })
 
-  window.webContents.on('did-attach-webview', function (e, gameview) {
-    gameview.on('will-navigate', function (e, url) {
+  mainWindow.webContents.on('did-attach-webview', function (e, _gameview) {
+    gameview = _gameview
+
+    _gameview.on('will-navigate', function (e, url) {
       if (GUEST_URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
         appLogger.debug('Gameview: Whitelist validated: ', url)
         return
@@ -84,20 +91,19 @@ export function createMainWindow () {
       shell.openExternal(url)
     })
 
-    gameview.session.setProxy({
+    _gameview.session.setProxy({
       proxyRules: `127.0.0.1:${proxy.port()}`,
       proxyBypassRules: '<local>,*.google-analytics.com,*.doubleclick.net',
       pacScript: ''
     }, function () {
       const entranceURL = appConfig.get('misc.entranceURL', KANCOLLE_URL)
-      gameview.loadURL(entranceURL, {
-        userAgent: gameview.getUserAgent()
+      _gameview.loadURL(entranceURL, {
+        userAgent: _gameview.getUserAgent()
           .replace(/tukiyomi\/\d+\.\d+\.\d+/, '')
           .replace(/Electron\/\d+\.\d+\.\d+/, '')
           .replace(/ +/g, ' ')
       })
-      gameview.session.setUserAgent(gameview.session.getUserAgent(), 'ja-JP')
+      _gameview.session.setUserAgent(_gameview.session.getUserAgent(), 'ja-JP')
     })
   })
-
 }

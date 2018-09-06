@@ -1,7 +1,8 @@
+import { expand } from '../scope-utils'
 export function mockBuiltins (scopes?: string[]): {[k: string]: any} {
   const ret: any = {}
   if (Array.isArray(scopes)) {
-    scopes.forEach(scope => {
+    expand(scopes).forEach(scope => {
       if (scope.startsWith('fs')) {
         const fs = require('fs')
         if (scope === 'fs.write') {
