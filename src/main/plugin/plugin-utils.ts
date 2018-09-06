@@ -3,10 +3,10 @@ import { readJSONSync } from 'fs-extra'
 import { execFile, ExecFileOptions } from 'child_process'
 import { join, resolve } from 'path'
 
-import { IS_WIN32 } from '../env'
+import { IS_WIN32, MODULE_DIR, RUN_IN_REPO } from '../env'
 import { appLogger } from '../logging/loggers'
 
-const YARN_BIN = resolve(`./node_modules/.bin/yarn${IS_WIN32 ? '.cmd' : ''}`)
+const YARN_BIN = resolve(MODULE_DIR, `${RUN_IN_REPO ? '.bin' : 'yarn/bin'}/yarn${IS_WIN32 ? '.cmd' : ''}`)
 const pExecFile = promisify(execFile)
 
 export function yarn (args: string[], options?: ExecFileOptions) {

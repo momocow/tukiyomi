@@ -1,6 +1,7 @@
 import {
   ensureDirSync,
-  copyFileSync,
+  readJSONSync,
+  outputJSONSync,
   removeSync,
   existsSync
  } from 'fs-extra'
@@ -14,8 +15,8 @@ import { Event } from '@tukiyomi/events'
 import { getLogger, getPluginLogger } from '../logging/loggers'
 import { getConfig } from '../configuring/configs'
 
-import Guest from '../../common/Guest'
-import { gameview } from '../window/MainWindow'
+// import Guest from '../../common/Guest'
+// import { gameview } from '../window/MainWindow'
 import { mockBuiltins } from './sandbox/mock-builtin'
 
 import { PLUGINS_DIR, ASSETS_DIR, IS_WIN32, DATA_DIR } from '../env'
@@ -27,7 +28,7 @@ import {
   validateLocalPlugin
 } from './plugin-utils'
 
-import { authorize } from './scope-utils'
+// import { authorize } from './scope-utils'
 
 interface PluginMeta {
   name: string,
@@ -86,7 +87,8 @@ export default class PluginLoader extends EventEmitter {
     ensureDirSync(this.path)
     if (!existsSync(this._pkgJson)) {
       PluginLoader.logger.debug('Creating package.json for runtime plugins. (%s)', this._pkgJson)
-      copyFileSync(join(ASSETS_DIR, 'templates', 'plugins-package.json'), this._pkgJson)
+      const _pluginsPkg = readJSONSync(join(ASSETS_DIR, 'templates', 'plugins-package.json'))
+      outputJSONSync(this._pkgJson, _pluginsPkg, { spaces: 2 })
     }
   }
 

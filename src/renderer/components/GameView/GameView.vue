@@ -19,6 +19,9 @@ import { join } from 'path'
 import { appLogger } from '../../logging/loggers'
 import { IS_DEV, ASSETS_DIR } from '../../env'
 
+import Guest from '../../../common/Guest'
+import captureCanvas from './guest/scripts/captureCanvas'
+
 import { KANCOLLE_URL } from '../../../common/config'
 
 import tweakView from './tweakView'
@@ -29,6 +32,11 @@ import tweakView from './tweakView'
 export default class GameView extends Vue {
   public src: string = KANCOLLE_URL
   public preload: string = join(ASSETS_DIR, 'scripts', 'webview-preload.js')
+
+  async capture () {
+    return await Guest(<Electron.WebviewTag> this.$refs.gameview)
+      .run(captureCanvas)
+  }
 
   mounted () {
     appLogger.debug('Gameview: mounted.')
@@ -58,11 +66,13 @@ export default class GameView extends Vue {
 
 <style scoped>
   .gameview {
-    position: relative;
+    position: absolute;
+    top: 0;
     display: inline-block;
     width: 100%;
     max-width: 1200px;
     max-height: 720px;
+    line-height: 0 !important;
   }
   .gameview>img {
     width: 60%;

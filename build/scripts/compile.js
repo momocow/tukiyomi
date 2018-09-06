@@ -94,6 +94,7 @@ async function compileMain () {
 
 async function compileRenderer () {
   const rendererConf = await WEBPACK_RENDERER_CONF(process.env)
+  rendererConf.externals.push('vue')
   return _runCompiler(rendererConf)
 }
 

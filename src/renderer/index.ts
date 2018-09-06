@@ -6,6 +6,10 @@ import { appLogger } from './logging/loggers'
 appLogger.info('Start initailization')
 
 import Vue from 'vue'
+import Vuetify from 'vuetify'
+import 'vuetify/dist/vuetify.min.css'
+
+Vue.use(Vuetify)
 
 import MainApp from './MainApp.vue'
 import store from './store'

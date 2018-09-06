@@ -23,13 +23,15 @@ export function createMainWindow () {
 
   const winState = WindowKeeper({
     defaultWidth: 1000,
-    defaultHeight: 600
+    defaultHeight: 624
   })
 
   const { x, y, width, height } = winState
 
   mainWindow = new BrowserWindow({
-    x, y, width, height,
+    x, y,
+    width,
+    height,
     minWidth: 500,
     minHeight: 300
   })
