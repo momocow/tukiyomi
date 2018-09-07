@@ -8,7 +8,7 @@ import {
 import { EventEmitter } from 'events'
 import { join } from 'path'
 import { NodeVM, VMError } from 'vm2'
-import { ExecFileOptions } from 'child_process'
+import { ForkOptions } from 'child_process'
 import _pick from 'lodash/pick'
 import { Event } from '@tukiyomi/events'
 
@@ -67,7 +67,7 @@ export default class PluginLoader extends EventEmitter {
     PluginLoader.logger.debug('(Init) using registry "%s".', this.registry)
   }
 
-  _execBin (args: string[], options?: ExecFileOptions) {
+  _execBin (args: string[], options?: ForkOptions) {
     PluginLoader.logger.debug('> yarn %s', args.join(' '))
     return yarn([
       ...args,

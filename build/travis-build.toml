@@ -1,3 +1,9 @@
 extends = 'build/local-build.toml'
 
 artifactName = "tukiyomi-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
+
+[nsis]
+artifactName = "tukiyomi-setup-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
+oneClick = false
+allowToChangeInstallationDirectory = true
+multiLanguageInstaller = true

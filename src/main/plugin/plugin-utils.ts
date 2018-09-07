@@ -1,39 +1,54 @@
-import { promisify } from 'util'
 import { readJSONSync } from 'fs-extra'
-import { execFile, ExecFileOptions } from 'child_process'
+import { fork, ForkOptions } from 'child_process'
 import { join, resolve } from 'path'
 
-import { IS_WIN32, MODULE_DIR, RUN_IN_REPO } from '../env'
+import { MODULE_DIR } from '../env'
 import { appLogger } from '../logging/loggers'
 
-const YARN_BIN = resolve(MODULE_DIR, `${RUN_IN_REPO ? '.bin' : 'yarn/bin'}/yarn${IS_WIN32 ? '.cmd' : ''}`)
-const pExecFile = promisify(execFile)
+const YARN_BIN = resolve(MODULE_DIR, `yarn/bin/yarn.js`)
 
-export function yarn (args: string[], options?: ExecFileOptions) {
+export function yarn (args: string[], options?: ForkOptions): Promise<{stdout: string, stderr: string}> {
   const _env = options && options.env ? options.env : {}
-  return pExecFile(YARN_BIN, [
+  const proc = fork(YARN_BIN, [
     ...args,
-    '--non-interactive'
+    '--non-interactive',
+    '--json'
   ], {
     ...options,
-    windowsHide: true,
+    stdio: 'pipe',
     env: {
       ..._env,
       NODE_ENV: 'production'
     }
-  }).then(({ stdout, stderr }) => {
-    let err
-    try {
-      err = JSON.parse(stderr)
-    } catch (e) { }
+  })
 
-    if (typeof err === 'object' && err.type === 'error') {
-      throw new Error(err.data || `Command failed. "yarn ${args.join(' ')}"`)
-    }
+  let stdout = ''
+  let stderr = ''
+  proc.stdout.on('data', (chunk) => {
+    stdout += `${chunk}`
+  })
+  proc.stderr.on('data', (chunk) => {
+    stderr += `${chunk}`
+  })
 
-    return {
-      stdout, stderr
-    }
+  return new Promise(function (resolve, reject) {
+    proc
+      .on('close', function () {
+        let err
+        try {
+          err = JSON.parse(stderr)
+        } catch (e) { }
+
+        if (typeof err === 'object' && err.type === 'error') {
+          reject(new Error(err.data || `Command failed. "yarn ${args.join(' ')}"`))
+          return
+        }
+
+        resolve({ stdout, stderr })
+      })
+      .on('error', (err) => {
+        reject(err)
+      })
   })
 }
 
