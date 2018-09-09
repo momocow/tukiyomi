@@ -11,6 +11,9 @@ import { gunzip, inflate } from 'zlib'
 import { proxyLogger } from '../logging/loggers'
 
 import { EventProxy } from './EventProxy'
+import { appConfig } from '../configuring/configs'
+
+const caseNormalizer = require('header-case-normalizer')
 
 export class LocalProxy {
   private _server: Server = createServer(async (req, res) => {
@@ -34,6 +37,20 @@ export class LocalProxy {
 
       if (bodyBuf.length > 0) {
         reqOptions.body = bodyBuf
+      }
+
+      switch (appConfig.get<string>('proxy.use', '')) {
+        case 'http': {
+          const host = appConfig.get('proxy.host', '127.0.0.1')
+          const port = appConfig.get('proxy.port', NaN)
+          const usr = appConfig.get('proxy.username', '')
+          const pwd = appConfig.get('proxy.passwd', '')
+          const portStr = port ? `:${port}` : ''
+          const authStr = usr && pwd ? `${usr}:${pwd}@` : ''
+          reqOptions.proxy = `http://${authStr}${host}${portStr}`
+          break
+        }
+        default:
       }
 
       const remoteReq = request(reqOptions, (err: Error, response: Response, resBody: Buffer) => {
@@ -87,13 +104,37 @@ export class LocalProxy {
     this._server.on('connect', (req: IncomingMessage, clientSock: Socket, head: Buffer) => {
       delete req.headers['proxy-connection']
       req.headers['connection'] = 'close'
+
       const remoteUrl = url.parse(`https://${req.url}`)
-      let remoteSock = net.connect(parseInt(remoteUrl.port || '443'), remoteUrl.hostname, () => {
-        clientSock.write("HTTP/1.1 200 Connection Established\r\nConnection: close\r\n\r\n")
-        remoteSock.write(head)
-        clientSock.pipe(remoteSock)
-        remoteSock.pipe(clientSock)
-      })
+      let remoteSock: Socket
+      switch (appConfig.get<string>('proxy.use', '')) {
+        case 'http': {
+          const host = appConfig.get('proxy.host', '')
+          const port = appConfig.get('proxy.port', NaN)
+          let msg = `CONNECT ${remoteUrl.hostname}:${remoteUrl.port} HTTP/${req.httpVersion}\r\n`
+          for (const k in req.headers) {
+            msg += `${caseNormalizer(k)}: ${req.headers[k]}\r\n`
+          }
+          msg += "\r\n"
+          remoteSock = net.connect(port, host, () => {
+            remoteSock.write(msg)
+            remoteSock.write(head)
+            clientSock.pipe(remoteSock)
+            remoteSock.pipe(clientSock)
+          })
+          break
+        }
+
+        default: {
+          const remoteUrl = url.parse(`https://${req.url}`)
+          remoteSock = net.connect(parseInt(remoteUrl.port || '443'), remoteUrl.hostname, () => {
+            clientSock.write("HTTP/1.1 200 Connection Established\r\nConnection: close\r\n\r\n")
+            remoteSock.write(head)
+            clientSock.pipe(remoteSock)
+            remoteSock.pipe(clientSock)
+          })
+        }
+      }
 
       clientSock.on('end', () => {
         remoteSock.end()

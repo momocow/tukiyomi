@@ -1,7 +1,5 @@
 /* global DMM */
 
-const { ipcRenderer } = require('electron')
-
 window.addEventListener('load', function () {
   const ticket = setInterval(function () {
     try {

@@ -14,7 +14,6 @@ import { registerService, registerCommand, publish } from './ipc'
 import { configMap, appConfig } from './configuring/configs'
 import pluginLoader from './plugin/loader'
 import { createMainWindow } from './window/MainWindow'
-
 import streamServer from './streaming/StreamServer'
 
 async function main () {

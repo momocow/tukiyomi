@@ -72,3 +72,4 @@ target = [
 ]
 icon = "assets/icons"
 maintainer = "MomoCow"
+category = "Game"
