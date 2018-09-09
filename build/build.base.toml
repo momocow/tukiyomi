@@ -1,0 +1,4 @@
+# It's just an empty config
+
+# Provide a way to override built-in config from electron-webpack
+# Just set "extends" in your config to this file

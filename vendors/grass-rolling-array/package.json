@@ -1,0 +1,22 @@
+{
+  "name": "@grass/grass-rolling-array",
+  "version": "1.0.0",
+  "description": "A rolling array is an array that always removes elements from its head to fit the max size",
+  "main": "index.js",
+  "scripts": {
+    "pub": "npm publish --registry https://registry.momocow.farm",
+    "test": "mocha"
+  },
+  "author": "MomoCow",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "mocha": "^5.2.0",
+    "sinon": "^5.1.0"
+  }
+}

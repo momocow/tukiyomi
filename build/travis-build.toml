@@ -1,52 +1,9 @@
-appId = "me.momocow.tukiyomi"
-productName = "tukiyomi"
+extends = 'build/local-build.toml'
+
 artifactName = "tukiyomi-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
-asar = true
-npmRebuild = true
-files = [
-  "**/*.js",
-  "../assets/icons/*.png"
-]
-
-[win]
-publish = [
-  "github"
-]
-icon = "assets/icons/tukiyomi.ico"
-
-  [[win.target]]
-  target = "nsis"
-  arch = [
-    "x64",
-    "ia32"
-  ]
-
-  [[win.target]]
-  target = "7z"
-  arch = [
-    "x64",
-    "ia32"
-  ]
 
 [nsis]
 artifactName = "tukiyomi-setup-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
-
-[linux]
-publish = [
-  "github"
-]
-target = [
-  "7z",
-  "deb",
-  "rpm",
-  "pacman",
-  "AppImage"
-]
-icon = "assets/icons"
-maintainer = "MomoCow"
-
-[directories]
-app = "compiled"

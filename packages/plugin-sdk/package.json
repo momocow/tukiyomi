@@ -1,0 +1,29 @@
+{
+  "name": "@tukiyomi/plugin-sdk",
+  "version": "0.1.4",
+  "description": "A SDK for TukiYomi Browser plugins.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tukiyomi",
+    "tukiyomi-sdk",
+    "kancolle",
+    "browser"
+  ],
+  "files": [
+    "dist",
+    "*.d.ts"
+  ],
+  "types": "./dist/index.d.ts",
+  "author": "MomoCow",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^3.0.1"
+  },
+  "dependencies": {
+    "@tukiyomi/events": "^0.1.1"
+  }
+}
