@@ -6,5 +6,10 @@
   },
   "plugin": {
     "registry": "https://registry.npmjs.org"
+  },
+  "proxy": {
+    "use": "",
+    "host": "",
+    "port": ""
   }
 }
