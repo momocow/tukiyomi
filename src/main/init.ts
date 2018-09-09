@@ -163,8 +163,4 @@ registerCommand('gameview.id', async function (id: number) {
   })
 })
 
-registerCommand('reload', function () {
-  pluginLoader.broadcast('network.reload')
-})
-
 // Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36

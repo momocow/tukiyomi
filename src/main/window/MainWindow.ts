@@ -1,5 +1,7 @@
 import WindowKeeper from 'electron-window-state'
 import { BrowserWindow, shell } from 'electron'
+const { register } = require('electron-localshortcut')
+import _throttle from 'lodash/throttle'
 
 import { GUEST_URL_WHITELIST, KANCOLLE_URL } from '../../common/config'
 
@@ -18,12 +20,16 @@ const HOST_URL_WHITELIST = [
 
 export let mainWindow: BrowserWindow | null = null
 
+function getHeight (width: number) {
+  return Math.round(width * 0.6 + 32)
+}
+
 export function createMainWindow () {
   if (mainWindow) return
 
   const winState = WindowKeeper({
     defaultWidth: 1000,
-    defaultHeight: 624
+    defaultHeight: 660
   })
 
   const { x, y, width, height } = winState
@@ -36,7 +42,6 @@ export function createMainWindow () {
     minHeight: 300
   })
 
-  winState.manage(mainWindow)
   mainWindow.setMenu(null)
 
   proxy.listen(function () {
@@ -56,10 +61,7 @@ export function createMainWindow () {
   }
 
   mainWindow.on('resize', function () {
-    if (mainWindow) {
-      const [ width, height ] = mainWindow.getSize()
-      publish('window-resize', width, height)
-    }
+    publish('window-resize')
   })
 
   mainWindow.on('closed', () => {
@@ -79,6 +81,18 @@ export function createMainWindow () {
   })
 
   mainWindow.webContents.on('did-attach-webview', function (e, _gameview) {
+    publish('window-resize')
+
+    register(mainWindow, 'F5', function () {
+      _gameview.reload()
+      pluginLoader.broadcast('network.reload')
+    })
+
+    register(mainWindow, 'Ctrl+F5', function () {
+      _gameview.reloadIgnoringCache()
+      pluginLoader.broadcast('network.reload')
+    })
+    
     _gameview.on('will-navigate', function (e, url) {
       if (
         GUEST_URL_WHITELIST.concat([
@@ -108,6 +122,11 @@ export function createMainWindow () {
           .replace(/ +/g, ' ')
       })
       _gameview.session.setUserAgent(_gameview.session.getUserAgent(), 'ja-JP')
+      if (mainWindow) {
+        const [ w ] = mainWindow.getContentSize()
+        mainWindow.setContentSize(w, getHeight(w))
+        winState.manage(mainWindow)
+      }
     })
   })
   pluginLoader.startAll()
