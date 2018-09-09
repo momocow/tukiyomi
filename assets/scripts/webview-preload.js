@@ -2,13 +2,6 @@
 
 const { ipcRenderer } = require('electron')
 
-window.addEventListener('keydown', function (e) {
-  if (e.code === 'F5') {
-    ipcRenderer.send(`cmd:reload`)
-    location.reload(e.ctrlKey)
-  }
-})
-
 window.addEventListener('load', function () {
   const ticket = setInterval(function () {
     try {
