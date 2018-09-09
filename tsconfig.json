@@ -1,11 +1,15 @@
 {
+  "extends": "./node_modules/electron-webpack/tsconfig-base.json",
   "compilerOptions": {
-    "allowJs": true,
-    "target": "es5",
-    "removeComments": true,
-    "moduleResolution": "node"
+    "experimentalDecorators": true
   },
-  "include": [
-    "src/**/*"
+  "exclude": [
+    "packages",
+    "plugins",
+    "test",
+    "capture",
+    "build",
+    "assets",
+    "static"
   ]
 }

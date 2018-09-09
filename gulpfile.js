@@ -3,6 +3,13 @@ const mri = require('mri')
 
 global.ROOT_DIR = __dirname
 
+if (!process.env.NODE_ENV || !process.env.TRAVIS) {
+  process.env.NODE_ENV = 'development'
+  process.env.production = false
+} else {
+  process.env.production = true
+}
+
 const ARGS = mri(process.argv.slice(2), {
   alias: {
     win: 'w',
@@ -14,27 +21,24 @@ const build = require('./build/scripts/build')
 const {
   initCompile,
   syncPkgJson,
-  composeEssentials,
-  compileScripts,
-  compileViews
+  compileMain,
+  compileRenderer
 } = require('./build/scripts/compile')
 const {
-  watchSrcAndCompile,
-  watchViewsAndCompile
+  watchMainAndCompile,
+  watchRendererAndCompile
 } = require('./build/scripts/watch')
 
-gulp.task('compile:views', compileViews)
-gulp.task('compile:script', compileScripts)
+gulp.task('compile:main', compileMain)
+gulp.task('compile:renderer', compileRenderer)
 
 gulp.task('compile',
   gulp.series(
     initCompile,
-    // for not breaking Parcel's pretty console output ;)
-    'compile:views',
     gulp.parallel(
       syncPkgJson,
-      composeEssentials,
-      'compile:script'
+      'compile:main',
+      'compile:renderer'
     )
   )
 )
@@ -44,6 +48,6 @@ gulp.task('build', function initBuild () {
 })
 
 gulp.task('watch', function initWatch () {
-  watchViewsAndCompile(gulp.series('compile:views'))
-  return watchSrcAndCompile(gulp.parallel('compile:script', composeEssentials))
+  watchRendererAndCompile(gulp.series('compile:renderer'))
+  return watchMainAndCompile(gulp.series('compile:script'))
 })

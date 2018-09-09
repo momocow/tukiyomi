@@ -1,0 +1,49 @@
+{
+  "name": "@grass/grass-logger",
+  "version": "4.1.0",
+  "description": "A simple logger with customizable message template and style.",
+  "main": "index.js",
+  "scripts": {
+    "pub": "npm publish --registry https://registry.momocow.farm",
+    "test": "nyc ava test/*/*.test.js",
+    "demo": "node example/basic-usage.js",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "author": "MomoCow",
+  "license": "MIT",
+  "dependencies": {
+    "string-template": "^1.0.0"
+  },
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "coveralls": "^3.0.2",
+    "eslint": "^4.19.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "nyc": "^12.0.2",
+    "sinon": "^6.1.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NodeGrass/grass-logger.git"
+  },
+  "keywords": [
+    "logger",
+    "log",
+    "@grass",
+    "theme",
+    "tag"
+  ],
+  "bugs": {
+    "url": "https://github.com/NodeGrass/grass-logger/issues"
+  },
+  "homepage": "https://github.com/NodeGrass/grass-logger#readme",
+  "nyc": {
+    "include": [
+      "lib/**/*.js"
+    ]
+  }
+}

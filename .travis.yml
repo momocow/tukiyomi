@@ -1,6 +1,8 @@
 os: linux
 services: docker
-language: generic
+language: node_js
+node_js:
+  - "node"
 
 cache:
   directories:
@@ -9,7 +11,14 @@ cache:
     - $HOME/.cache/electron-builder
 
 env:
-  TRAVIS=1
+  - NODE_ENV=production SENTRY_ORG=momocow SENTRY_PROJECT=tukiyomi
+
+install:
+  - npm install @sentry/cli -g
+
+before_script:
+  - export SENTRY_RELEASE_VERSION=$(sentry-cli releases propose-version)
+  - echo $SENTRY_RELEASE_VERSION > RELEASE
 
 script:
   - |
@@ -23,6 +32,11 @@ script:
       "NODE_ENV=production yarn install && yarn test && NODE_ENV=production yarn release --linux --win"
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
+
+# Announce a release to Sentry
+after_success:
+  - sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE_VERSION
+  - sentry-cli releases set-commits --auto $SENTRY_RELEASE_VERSION
 
 branches:
   only:
