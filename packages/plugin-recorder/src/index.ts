@@ -4,7 +4,8 @@ import {
   env,
   on,
   getGuestUtils,
-  ipc
+  ipc,
+  getConfig
 } from '@tukiyomi/plugin-sdk'
 
 import {
@@ -16,7 +17,14 @@ import { createWriteStream, WriteStream, existsSync } from 'fs'
 import { join } from 'path'
 import * as dateformat from 'dateformat'
 
-@Plugin
+@Plugin({
+  default: {
+    media_type: 'webm',
+    video_bps: 4000000,
+    audio_bps: 64000,
+    filename: '[{timestamp:yyyymmdd-HHMMss}][{map}] Record'
+  }
+})
 export default class Recorder {
   private _live?: SocketIOClient.Socket
   private _ostream?: WriteStream
@@ -31,17 +39,26 @@ export default class Recorder {
       return window.TUKIYOMI_STREAM_PORT
     })
 
-    let recordFile = join(
-      env.DATA_DIR, dateformat('[yyyymmdd-HHMMss]') +
-        `[${evt.mapReadable}] Record`)
+    const fileExt = getConfig('media_type', 'webm').replace(/^video\//, '')
+    const filenameTpl = getConfig('filename', '[{timestamp:yyyymmdd-HHMMss}][{map}] Record')
+    let filename = filenameTpl
+      .replace('{map}', evt.mapReadable)
     
+    const matched = filename.match(/{timestamp(:(yyyymmdd-HHMMss))?}/)
+    if (matched) {
+      filename = filename.replace(
+        matched[0], matched[2] ? dateformat(matched[2]) : new Date().toISOString())
+    }
+
+    let recordFile = join(env.DATA_DIR, filename)
+
     let suffix = 1
-    while (existsSync(recordFile + '.webm')) {
+    while (existsSync(recordFile + '.' + fileExt)) {
       recordFile = recordFile.replace(/(\.\d+)?$/, '.' + suffix)
       suffix++
     }
 
-    this._ostream = createWriteStream(recordFile + '.webm')
+    this._ostream = createWriteStream(recordFile + '.' + fileExt)
     console.log('Outputing to "%s"', recordFile)
 
     this._live = connect(`ws://127.0.0.1:${port}/live`)
@@ -50,12 +67,12 @@ export default class Recorder {
         this._ostream.write(Buffer.from(data))
       }
     })
-    
+
     await guest.run(function () {
       window.TUKIYOMI_START_RECORD(500, {
-        mimeType: 'video/webm',
-        audioBitsPerSecond: 64000,
-        videoBitsPerSecond: 4000000 // 4Mbps
+        mimeType: 'video/' + fileExt,
+        audioBitsPerSecond: getConfig('audio_bps', 64000),
+        videoBitsPerSecond: getConfig('video_bps', 4000000)
       })
       console.log('start recording')
     })
