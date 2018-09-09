@@ -3,7 +3,7 @@ interface GuestRunOptions {
   useGesture?: boolean
 }
 
-class GuestContent {
+export class GuestContent {
   constructor (public webContent: Electron.WebviewTag | Electron.webContents) {
 
   }

@@ -19,23 +19,24 @@ import { join } from 'path'
 import { appLogger } from '../../logging/loggers'
 import { IS_DEV, ASSETS_DIR } from '../../env'
 
-import Guest from '../../../common/Guest'
-import captureCanvas from './guest/scripts/captureCanvas'
+// import Guest from '../../../common/Guest'
+// import captureCanvas from './guest/scripts/captureCanvas'
 
-import { KANCOLLE_URL } from '../../../common/config'
+import store from '../../configuring/store'
 
 import tweakView from './tweakView'
+import { command } from '../../ipc'
 
 @Component({
   name: 'GameView'
 })
 export default class GameView extends Vue {
-  public src: string = KANCOLLE_URL
+  public src: string = store.state.config.app.misc.entranceURL
   public preload: string = join(ASSETS_DIR, 'scripts', 'webview-preload.js')
 
   async capture () {
-    return await Guest(<Electron.WebviewTag> this.$refs.gameview)
-      .run(captureCanvas)
+    // return await Guest(<Electron.WebviewTag> this.$refs.gameview)
+    //   .run(captureCanvas)
   }
 
   mounted () {
@@ -56,10 +57,15 @@ export default class GameView extends Vue {
       appLogger.debug('Gameview: has been navigated to "%s"', url)
       appLogger.debug('Gameview: elapsed = %d ms', elapsed)
 
+      if (store.state.config.app.misc.entranceURL === url.replace(/\/$/, '')) {
+        command('gameview.id', gameview.getWebContents().id)
+      }
+
       if (IS_DEV && !gameview.isDevToolsOpened()) gameview.openDevTools()
 
       tweakView(gameview)
     })
+
   }
 }
 </script>

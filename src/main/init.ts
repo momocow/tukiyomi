@@ -1,17 +1,21 @@
 /************************
  * Initialization
  ************************/
-import { app } from 'electron'
+import { app, webContents } from 'electron'
 import { VMError } from 'vm2'
 import * as Sentry from '@sentry/electron'
 
 import { SENTRY_DSN } from '../common/config'
-import { poolMap, appLogger, appPool, loggerMap } from './logging/loggers'
-import { IS_RELEASE, RELEASE, IS_DEV, ASSETS_DIR } from './env'
+import Guest from '../common/Guest'
+import { injectCanvasRecorder } from '../common/guest/canvasRecorder'
+import { poolMap, appLogger, appPool, loggerMap, streamLogger } from './logging/loggers'
+import * as env from './env'
 import { registerService, registerCommand, publish } from './ipc'
 import { configMap, appConfig } from './configuring/configs'
 import pluginLoader from './plugin/loader'
 import { createMainWindow } from './window/MainWindow'
+
+import streamServer from './streaming/StreamServer'
 
 async function main () {
   const loading: Promise<void>[] = []
@@ -32,13 +36,7 @@ async function main () {
 
   // All configs are ready after this line
 
-  if (!app.isReady()) {
-    app.once('ready', createMainWindow)
-  } else {
-    createMainWindow()
-  }
-
-  registerService('config', async function (namespace: string, key?: string, defVal?: any) {
+  registerService('config', function (namespace: string, key?: string, defVal?: any) {
     appLogger.debug('Config "%s": fetching', namespace)
     const confObj = configMap.get(namespace)
     if (confObj) {
@@ -49,16 +47,24 @@ async function main () {
 
   publish('config.ready')
 
+  streamServer.listen()
+
   // apply configs
   pluginLoader.registry = appConfig.get('plugin.registry', pluginLoader.registry)
-  pluginLoader.load()
+  await pluginLoader.load()
+
+  if (!app.isReady()) {
+    app.once('ready', createMainWindow)
+  } else {
+    createMainWindow()
+  }
 }
 
 // error report to Sentry
-if (IS_RELEASE) {
+if (env.IS_RELEASE) {
   Sentry.init({
     dsn: SENTRY_DSN,
-    release: RELEASE
+    release: env.RELEASE
   })
 }
 
@@ -116,16 +122,49 @@ main()
 
 // IPC services/commands registration
 registerService('env', function () {
-  return {
-    IS_DEV,
-    IS_RELEASE,
-    RELEASE,
-    ASSETS_DIR
-  }
+  return { ...env }
 })
+
+// registerService('stream.port', async function () {
+//   if (streamServer.isListening()) {
+//     return streamServer.port()
+//   }
+  
+//   return new Promise(function (resolve) {
+//     streamServer.onListen(function () {
+//       resolve(streamServer.port())
+//     })
+//   })
+// })
 
 registerCommand('logger', function (txt: string) {
   appPool.push(txt)
+})
+
+registerCommand('gameview.id', async function (id: number) {
+  const gameWebContent = webContents.fromId(id)
+  const guest = Guest(gameWebContent)
+
+  if (streamServer.isListening()) {
+    await guest.run(injectCanvasRecorder, [ streamServer.port() ])
+  } else {
+    await new Promise(function (resolve) {
+      streamServer.onListen(() => {
+        guest.run(injectCanvasRecorder, [ streamServer.port() ])
+          .then(function () {
+            resolve()
+          })
+      })
+    })
+  }
+  streamLogger.info('Canvas Recorder injected')
+  setImmediate(function () {
+    pluginLoader.broadcast('app.ready')
+  })
+})
+
+registerCommand('reload', function () {
+  pluginLoader.broadcast('network.reload')
 })
 
 // Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36

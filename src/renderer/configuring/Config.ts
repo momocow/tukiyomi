@@ -2,17 +2,20 @@ import _get from 'lodash/get'
 import _set from 'lodash/set'
 import { EventEmitter } from 'events'
 
-import { service, subscribe } from '../ipc'
-import store from '../store'
+import { subscribe, serviceSync } from '../ipc'
 
 import { appLogger } from '../logging/loggers'
 
-import IService from './IService'
+import IService from '../services/IService'
+
+export default interface Config<T extends object> {
+  on: (event: "change", listener: (key: string, val: any, oldVal: any) => void) => this
+}
 
 export default class Config<T extends object> extends EventEmitter implements IService {
   public readonly service: string = 'config'
   
-  private _data: T | undefined
+  private _data: T
   
   /**
    * Automatically sync with main process and Vuex store
@@ -24,21 +27,9 @@ export default class Config<T extends object> extends EventEmitter implements IS
       this.set(k, n)
     })
 
-    this.init()
-  }
-
-  async init () {
-    // TODO maybe use sync service if renderer is started right after config.ready is published?
-    const result = await service<T>(this.service, [ this.namespace ])
-
+    const result = serviceSync<T>(this.service, this.namespace)
     appLogger.debug('Config "%s" is loaded.', this.namespace)
     this._data = result
-
-    this.emit('load')
-    store.commit('config/load', {
-      namespace: this.namespace,
-      config: this._data
-    })
   }
 
   get (key: string, defaultVal?: any): any {
@@ -46,23 +37,15 @@ export default class Config<T extends object> extends EventEmitter implements IS
   }
 
   set (key: string, value: any): void {
-    if (!this._data) return
-
     // TODO sync back to main process
-    
     const oldVal = this.get(key)
     if (typeof key === 'string' && oldVal !== value) {
       _set(this._data, key, value)
       this.emit('change', key, value, oldVal)
-      store.commit('config/change', {
-        namespace: this.namespace,
-        key,
-        value
-      })
     }
   }
 
   toJSON () {
-    return this._data
+    return <T>JSON.parse(JSON.stringify(this._data))
   }
 }

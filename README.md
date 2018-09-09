@@ -7,7 +7,7 @@ Yet another scalable KanColle Browser.
 
 ## 特色
 - 前端框架採用 [Vue](https://vuejs.org/) + [Typescript](https://www.typescriptlang.org)
-- GIF戰鬥紀錄
+- ~~GIF戰鬥紀錄~~ WebM紀錄 (可考慮支援串流)
 - 作者是條牛 🐄
 
 

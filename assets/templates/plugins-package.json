@@ -14,5 +14,8 @@
   "bugs": {
     "url": "https://github.com/momocow/tukiyomi/issues"
   },
-  "homepage": "https://github.com/momocow/tukiyomi#readme"
+  "homepage": "https://github.com/momocow/tukiyomi#readme",
+  "dependencies": {
+    "@tukiyomi/plugin-recorder": "^0.1.0"
+  }
 }

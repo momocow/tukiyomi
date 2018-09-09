@@ -21,7 +21,7 @@
     "typescript": "^3.0.3"
   },
   "dependencies": {
-    "@tukiyomi/plugin-sdk": "file:../../packages/plugin-sdk"
+    "@tukiyomi/plugin-sdk": "^0.1.2"
   },
   "tukiyomi": {
     "scopes": [

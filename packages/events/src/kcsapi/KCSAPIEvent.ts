@@ -16,9 +16,17 @@ export class KCSAPIEvent extends NetworkEvent {
       try {
         this._lazyJson = JSON.parse(body)
       } catch (e) {
-        this._lazyJson = null
+        this._lazyJson = {}
       }
     }
     return this._lazyJson
+  }
+
+  get resultCode () {
+    return this.responseJSON.api_result
+  }
+
+  get resultMsg () {
+    return this.responseJSON.api_result_msg
   }
 }

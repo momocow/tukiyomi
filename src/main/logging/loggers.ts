@@ -1,7 +1,7 @@
 import Logger from '@grass/grass-logger'
 
 import { IS_DEV } from '../env'
-import { APP_LOGGER_NAME, PROXY_LOGGER_NAME, LOG_ENTRY_TPL } from '../../common/config'
+import { APP_LOGGER_NAME, PROXY_LOGGER_NAME, LOG_ENTRY_TPL, STREAM_LOGGER_NAME } from '../../common/config'
 
 import { normalizePluginName } from '../plugin/plugin-utils'
 
@@ -74,3 +74,4 @@ export function getPluginLogger (plugin: string): Logger {
 
 export const appLogger = getLogger(APP_LOGGER_NAME)
 export const proxyLogger = getLogger(PROXY_LOGGER_NAME)
+export const streamLogger = getLogger(STREAM_LOGGER_NAME)

@@ -5,6 +5,7 @@ import { GUEST_URL_WHITELIST, KANCOLLE_URL } from '../../common/config'
 
 import { appLogger } from '../logging/loggers'
 import { appConfig } from '../configuring/configs'
+import pluginLoader from '../plugin/loader'
 
 import proxy from '../proxy/proxies'
 
@@ -16,7 +17,6 @@ const HOST_URL_WHITELIST = [
 ]
 
 export let mainWindow: BrowserWindow | null = null
-export let gameview: Electron.WebContents | null = null
 
 export function createMainWindow () {
   if (mainWindow) return
@@ -79,10 +79,12 @@ export function createMainWindow () {
   })
 
   mainWindow.webContents.on('did-attach-webview', function (e, _gameview) {
-    gameview = _gameview
-
     _gameview.on('will-navigate', function (e, url) {
-      if (GUEST_URL_WHITELIST.filter((rule) => new RegExp(rule).test(url)).length > 0) {
+      if (
+        GUEST_URL_WHITELIST.concat([
+          _gameview.getURL()
+        ]).filter((rule) => new RegExp(rule).test(url)).length > 0
+      ) {
         appLogger.debug('Gameview: Whitelist validated: ', url)
         return
       }
@@ -108,4 +110,5 @@ export function createMainWindow () {
       _gameview.session.setUserAgent(_gameview.session.getUserAgent(), 'ja-JP')
     })
   })
+  pluginLoader.startAll()
 }

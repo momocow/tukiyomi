@@ -45,7 +45,7 @@ export class LocalProxy {
 
         const onComplete = (decodedBody: string) => {
           evtProxy.emitResponse(response.statusCode, response.headers, decodedBody)
-          evtProxy.emit()
+          evtProxy.emitNetwork()
         }
 
         switch (response.headers["content-encoding"]) {

@@ -1,6 +1,6 @@
 {
   "name": "@tukiyomi/events",
-  "version": "0.0.0",
+  "version": "0.1.1",
   "description": "Event interfaces used to emit event info among plugins.",
   "main": "dist/index.js",
   "scripts": {
@@ -11,6 +11,10 @@
     "tukiyomi",
     "tukiyomi-events",
     "development"
+  ],
+  "files": [
+    "dist",
+    "./*.d.ts"
   ],
   "author": "MomoCow",
   "license": "MIT",

@@ -1,16 +1,18 @@
-///<reference path="./global.d.ts" />
-
 import { EventEmitter } from 'events'
 import { eventMap } from './events'
+
+export interface TukiYomiPluginOptions {
+  default?: {[string: string]: any}
+}
 
 interface PluginClass<PC extends Object> {
   new (...args: any[]): PC
 }
 
 // https://github.com/vuejs/vue-class-component/blob/cdcbfe5bb1a4c9d59a4b3066477f49c9aae8e2fc/src/index.ts#L9
-export function Plugin <P extends Object> (options: TukiYomi.Plugin.PluginOptions): (<PC extends PluginClass<P>> (target: PC) => PC)
+export function Plugin <P extends Object> (options: TukiYomiPluginOptions): (<PC extends PluginClass<P>> (target: PC) => PC)
 export function Plugin <PC extends PluginClass<Object>> (target: PC): PC
-export function Plugin (options: TukiYomi.Plugin.PluginOptions | PluginClass<Object>): any {
+export function Plugin (options: TukiYomiPluginOptions | PluginClass<Object>): any {
   if (typeof options === 'function') {
     return pluginFactory(options)
   }
@@ -20,7 +22,7 @@ export function Plugin (options: TukiYomi.Plugin.PluginOptions | PluginClass<Obj
   }
 }
 
-function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomi.Plugin.PluginOptions) {
+function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomiPluginOptions) {
   const evtConst = eventMap.get(Clazz)
   const evtProto = eventMap.get(Clazz.prototype)
 
@@ -44,7 +46,7 @@ function pluginFactory (Clazz: PluginClass<Object>, options?: TukiYomi.Plugin.Pl
     listenerCount () { return 0 }
 
     // TODO deep clone?
-    public meta: TukiYomi.Plugin.PluginOptions = options || {}
+    public meta: TukiYomiPluginOptions = options || {}
 
     constructor () {
       super()

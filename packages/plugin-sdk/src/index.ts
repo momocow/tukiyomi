@@ -1,11 +1,12 @@
-///<reference path="./index.d.ts" />
+/// <reference path="../global.d.ts" />
 
-export { Plugin } from './Plugin'
-export { on, start, stop } from './events'
+export * from './Plugin'
+export * from './events'
 
-export { toolkit } from './toolkit'
+export * from './toolkit'
 
 export const env = global.env
-export const canvas = global.canvas
+
+export const ipc = global.ipc
 
 export * from '@tukiyomi/events'

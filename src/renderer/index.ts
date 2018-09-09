@@ -11,12 +11,8 @@ import 'vuetify/dist/vuetify.min.css'
 
 Vue.use(Vuetify)
 
+import store from './configuring/store'
 import MainApp from './MainApp.vue'
-import store from './store'
-
-// import ref from '../common/refdb'
-
-import { remote } from 'electron'
 
 window.onload = function () {
   appLogger.debug('Client window is loaded.')
@@ -26,11 +22,4 @@ window.onload = function () {
     el: '#app',
     render: (h) => h(MainApp)
   })
-
-  // ref.namespace('vue')
-  //   .set('root', root, { readonly: true })
 }
-
-remote.getCurrentWebContents().on('dom-ready', async function () {
-  appLogger.debug('Client DOM is ready.')
-})

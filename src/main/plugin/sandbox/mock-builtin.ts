@@ -10,11 +10,13 @@ export function mockBuiltins (scopes?: string[]): {[k: string]: any} {
           ret.writeFileSync = fs.writeFileSync
           ret.write = fs.write
           ret.writeSync = fs.writeSync
+          ret.createWriteStream = fs.createWriteStream
         } else if (scope === 'fs.read') {
           ret.readFile = fs.readFile
           ret.readFileSync = fs.readFileSync
           ret.read = fs.read
           ret.readSync = fs.readSync
+          ret.createReadStream = fs.createReadStream
         } else if (scope === 'fs.stat') {
           ret.fstat = fs.fstat
           ret.lstat = fs.lstat

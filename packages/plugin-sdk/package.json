@@ -1,7 +1,7 @@
 {
   "name": "@tukiyomi/plugin-sdk",
-  "version": "0.0.0",
-  "description": "The base class of TukiYomi plugins.",
+  "version": "0.1.4",
+  "description": "A SDK for TukiYomi Browser plugins.",
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -p .",
@@ -15,7 +15,7 @@
   ],
   "files": [
     "dist",
-    "./*.d.ts"
+    "*.d.ts"
   ],
   "types": "./dist/index.d.ts",
   "author": "MomoCow",
@@ -24,6 +24,6 @@
     "typescript": "^3.0.1"
   },
   "dependencies": {
-    "@tukiyomi/events": "file:../events"
+    "@tukiyomi/events": "^0.1.1"
   }
 }

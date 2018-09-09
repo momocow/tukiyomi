@@ -3,11 +3,13 @@ import {
   NetworkEvent,
   KCSAPIEvent,
   NetworkRequestEvent,
-  NetworkResponseEvent
+  NetworkResponseEvent,
+  PortEvent,
+  MapStartEvent
 } from '@tukiyomi/events'
 
-import pluginLoader from '../plugin/loader'
 import { IncomingHttpHeaders } from 'http'
+import pluginLoader from '../plugin/loader'
 
 export class EventProxy {
   private _isKCSAPI: boolean = false
@@ -25,13 +27,25 @@ export class EventProxy {
     pluginLoader.broadcast('network.res', this._response)
   }
 
-  emit () {
+  emitNetwork () {
     if (this._request && this._response) {
       if (this._isKCSAPI) {
+        const { pathname } = parseURL(this._request.url)
+        if (pathname) {
+          if (pathname.startsWith('/kcsapi/api_req_map/start')) {
+            pluginLoader.broadcast('kcsapi.map.start', new MapStartEvent(this._request, this._response))
+          } else if (pathname.startsWith('/kcsapi/api_port/port')) {
+            pluginLoader.broadcast('kcsapi.port', new PortEvent(this._request, this._response))
+          }
+        }
         pluginLoader.broadcast('kcsapi', new KCSAPIEvent(this._request, this._response))
       }
       pluginLoader.broadcast('network', new NetworkEvent(this._request, this._response))
     }
+  }
+
+  emitEvent (name: string) {
+    pluginLoader.broadcast(name)
   }
 }
 

@@ -11,13 +11,15 @@ import { NodeVM, VMError } from 'vm2'
 import { ForkOptions } from 'child_process'
 import _pick from 'lodash/pick'
 import { Event } from '@tukiyomi/events'
+import { webContents } from 'electron'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
 import { getConfig } from '../configuring/configs'
 
-// import Guest from '../../common/Guest'
-// import { gameview } from '../window/MainWindow'
+import Guest from '../../common/Guest'
 import { mockBuiltins } from './sandbox/mock-builtin'
+
+import * as ipc from '../ipc'
 
 import { PLUGINS_DIR, ASSETS_DIR, IS_WIN32, DATA_DIR } from '../env'
 
@@ -28,7 +30,7 @@ import {
   validateLocalPlugin
 } from './plugin-utils'
 
-// import { authorize } from './scope-utils'
+import { authorize } from './scope-utils'
 
 interface PluginMeta {
   name: string,
@@ -41,8 +43,9 @@ interface PluginMeta {
   dependencies?: {[k: string]: string},
 
   // insert by loader
+  vm: NodeVM,
   displayName: string,
-  meta?: TukiYomi.Plugin.PluginOptions,
+  meta?: TukiYomi.TukiYomiPluginOptions,
   tukiyomi?: {
     scopes?: string[]
   }
@@ -117,6 +120,14 @@ export default class PluginLoader extends EventEmitter {
   async install (plugin: string) {
 
   }
+  
+  start (plugin: string): this {
+    const pluginInstance = this._pluginInsts.get(plugin)
+    if (pluginInstance) {
+      pluginInstance.emit('app.start')
+    }
+    return this
+  }
 
   stop (plugin: string): this {
     const pluginInstance = this._pluginInsts.get(plugin)
@@ -124,6 +135,10 @@ export default class PluginLoader extends EventEmitter {
       pluginInstance.emit('app.stop')
     }
     return this
+  }
+
+  startAll () {
+    this.broadcast('app.start')
   }
 
   stopAll () {
@@ -210,8 +225,9 @@ export default class PluginLoader extends EventEmitter {
         ensureDirSync(env.DATA_DIR)
   
         // prepare plugin sandbox
-        const sandbox: any = { env }
+        const sandbox: any = { env, ipc }
         if (meta.tukiyomi && meta.tukiyomi.scopes) {
+          
           // let canvasApiEnabled = false
           // if (authorize(meta.tukiyomi.scopes, 'canvas.context')) {
           //   canvas.allowContext()
@@ -226,6 +242,9 @@ export default class PluginLoader extends EventEmitter {
           // }
         }
 
+        // TODO Dangerous!!!
+        // sandbox.process = process
+
         const vm = new NodeVM({
           console: 'redirect',
           require: {
@@ -236,12 +255,20 @@ export default class PluginLoader extends EventEmitter {
               'querystring',
               'path',
               'util',
+              // TODO Security check?
+              // 'http',
+              // 'https',
+              // 'tty',
+              // 'child_process',
               // mocked
               'fs'
             ],
             root: join(this.path, 'node_modules'),
             context: 'sandbox',
-            mock: mockBuiltins(meta.tukiyomi && meta.tukiyomi.scopes)
+            mock: {
+              ...mockBuiltins(meta.tukiyomi && meta.tukiyomi.scopes),
+              'socket.io-client': require('socket.io-client')
+            }
           },
           sandbox
         })
@@ -287,7 +314,15 @@ export default class PluginLoader extends EventEmitter {
 
           // inject config to plugin's sandbox
           vm.freeze(pluginConfig, 'config')
-          instance.emit('app.start')
+
+          if (meta.tukiyomi && meta.tukiyomi.scopes && authorize(meta.tukiyomi.scopes, 'dom.guest')) {
+            ipc.registerCommand('gameview.id', (id: number) => {
+              pluginLogger.debug('Guest utils injected.')
+              vm.freeze(Guest(webContents.fromId(id)), 'guest')
+            })
+          }
+
+          meta.vm = vm
 
           this._pluginInsts.set(plugin, instance)
           this._pluginStates.set(instance, meta)
@@ -304,7 +339,7 @@ export default class PluginLoader extends EventEmitter {
       }
     })
 
-    Promise.all(loadingQueue)
+    await Promise.all(loadingQueue)
       .then(() => {
         PluginLoader.logger.info('Loaded plugins: %d', this._pluginInsts.size)
       })

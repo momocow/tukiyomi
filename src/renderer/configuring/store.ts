@@ -2,22 +2,20 @@ import Vue from 'vue'
 import Vuex, { Store, Module } from 'vuex'
 import set from 'lodash/set'
 
+import { appConfig } from './configs'
+
 Vue.use(Vuex)
 
-const config: Module<object, object> = {
+interface ConfigStore {
+  app: TukiYomi.AppConfig
+}
+
+const config: Module<ConfigStore, object> = {
   namespaced: true,
   state: {
-    app: {
-      misc: {
-        setDMMCookie: true,
-        disableDMMDialog: true
-      }
-    }
+    app: appConfig.toJSON()
   },
   mutations: {
-    load (state, { namespace, config }: { namespace: string, config: any }) {
-      set(state, namespace, config)
-    },
     change (state, { namespace, key, value }: { namespace: string, key: string, value: any }) {
       set(state, `${namespace}.${key}`, value)
     }
@@ -28,9 +26,21 @@ const i18n: Module<object, object> = {
 
 }
 
-export default new Store({
+interface GlobalStore {
+  config: ConfigStore
+}
+
+const store = new Store<GlobalStore>({
   modules: {
     config,
     i18n
   }
 })
+
+appConfig.on('change', (key, value) => {
+  store.commit('config/change', {
+    namespace: 'app', key, value
+  })
+})
+
+export default store
