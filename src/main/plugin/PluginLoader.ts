@@ -12,6 +12,7 @@ import { ForkOptions } from 'child_process'
 import _pick from 'lodash/pick'
 import { Event } from '@tukiyomi/events'
 import { webContents } from 'electron'
+import { findAndReadConfig } from 'read-config-file'
 
 import { getLogger, getPluginLogger } from '../logging/loggers'
 import { getConfig } from '../configuring/configs'
@@ -51,6 +52,11 @@ interface PluginMeta {
   }
 }
 
+interface PluginList {
+  blacklist?: string[]
+  whitelist?: string[]
+}
+
 export default class PluginLoader extends EventEmitter {
   private readonly _pkgJson: string
   private readonly _pluginInsts: Map<string, TukiYomi.PluginWrapper> = new Map()
@@ -88,10 +94,17 @@ export default class PluginLoader extends EventEmitter {
   initDir () {
     PluginLoader.logger.debug('Ensuring plugin directory "%s"', this.path)
     ensureDirSync(this.path)
+
+    const _defPluginsPkg = readJSONSync(join(ASSETS_DIR, 'templates', 'plugins-package.json'))
     if (!existsSync(this._pkgJson)) {
       PluginLoader.logger.debug('Creating package.json for runtime plugins. (%s)', this._pkgJson)
-      const _pluginsPkg = readJSONSync(join(ASSETS_DIR, 'templates', 'plugins-package.json'))
-      outputJSONSync(this._pkgJson, _pluginsPkg, { spaces: 2 })
+      outputJSONSync(this._pkgJson, _defPluginsPkg, { spaces: 2 })
+    } else {
+      PluginLoader.logger.debug('Merging package.json for runtime plugins. (%s)', this._pkgJson)
+      const _localPluginsPkg = readJSONSync(this._pkgJson)
+      _localPluginsPkg.dependencies = Object.assign(
+        {}, _defPluginsPkg.dependencies, _localPluginsPkg.dependencies)
+      outputJSONSync(this._pkgJson, _localPluginsPkg, { spaces: 2 })
     }
   }
 
@@ -187,8 +200,28 @@ export default class PluginLoader extends EventEmitter {
       ])
     }
 
+    const pluginListConf = await findAndReadConfig<PluginList>({
+      configFilename: 'plugins',
+      projectDir: this.path,
+      packageKey: '',
+      packageMetadata: null
+    })
+
+    const whitelist = pluginListConf ? pluginListConf.result.whitelist : undefined
+    const blacklist = pluginListConf ? pluginListConf.result.blacklist : undefined
+
     const loadingQueue = this.listInstalled().map(async (plugin: string, index) => {
       PluginLoader.logger.debug('Plugin (%d: %s): start loading', index, plugin)
+
+      if (blacklist && blacklist.includes(plugin)) {
+        PluginLoader.logger.debug('Plugin (%d: %s): blacklisted.', index, plugin)
+        return
+      }
+
+      if (whitelist && !whitelist.includes(plugin)) {
+        PluginLoader.logger.debug('Plugin (%d: %s): not whitelisted.', index, plugin)
+        return
+      }
 
       const pluginDir = join(this.path, 'node_modules', plugin)
 

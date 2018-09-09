@@ -33,7 +33,7 @@ export function getLogger (name: string): Logger {
   if (!logger) {
     logger = new Logger(name)
     loggerMap.set(name, logger)
-    logger.setLevel(IS_DEV ? 'ALL' : 'WARN')
+    logger.setLevel(IS_DEV ? 'ALL' : 'INFO')
     logger.template = LOG_ENTRY_TPL
     logger.renderer = function (entry) {
       return {
@@ -54,7 +54,7 @@ export function getPluginLogger (plugin: string): Logger {
   if (!logger) {
     logger = new Logger(name)
     loggerMap.set(name, logger)
-    logger.setLevel(IS_DEV ? 'ALL' : 'WARN')
+    logger.setLevel(IS_DEV ? 'ALL' : 'INFO')
     logger.template = LOG_ENTRY_TPL
     logger.renderer = function (entry) {
       return {

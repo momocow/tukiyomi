@@ -16,6 +16,6 @@
   },
   "homepage": "https://github.com/momocow/tukiyomi#readme",
   "dependencies": {
-    "@tukiyomi/plugin-recorder": "^0.1.0"
+    "@tukiyomi/plugin-recorder": "^0.1.2"
   }
 }
