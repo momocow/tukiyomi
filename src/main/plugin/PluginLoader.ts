@@ -103,7 +103,7 @@ export default class PluginLoader extends EventEmitter {
       PluginLoader.logger.debug('Merging package.json for runtime plugins. (%s)', this._pkgJson)
       const _localPluginsPkg = readJSONSync(this._pkgJson)
       _localPluginsPkg.dependencies = Object.assign(
-        {}, _defPluginsPkg.dependencies, _localPluginsPkg.dependencies)
+        {}, _localPluginsPkg.dependencies, _defPluginsPkg.dependencies)
       outputJSONSync(this._pkgJson, _localPluginsPkg, { spaces: 2 })
     }
   }
@@ -194,10 +194,7 @@ export default class PluginLoader extends EventEmitter {
       this.initDir()
 
       // yarn install --check-files
-      await this._execBin([
-        'install',
-        '--check-files'
-      ])
+      await this._execBin([ 'install' ])
     }
 
     const pluginListConf = await findAndReadConfig<PluginList>({

@@ -59,7 +59,7 @@ export default class Recorder {
     }
 
     this._ostream = createWriteStream(recordFile + '.' + fileExt)
-    console.log('Outputing to "%s"', recordFile)
+    console.info('Outputing to "%s"', recordFile)
 
     this._live = connect(`ws://127.0.0.1:${port}/live`)
     this._live.on('blob', (data: ArrayBuffer, meta: { id: number }) => {
@@ -68,14 +68,17 @@ export default class Recorder {
       }
     })
 
-    await guest.run(function () {
-      window.TUKIYOMI_START_RECORD(500, {
-        mimeType: 'video/' + fileExt,
-        audioBitsPerSecond: getConfig('audio_bps', 64000),
-        videoBitsPerSecond: getConfig('video_bps', 4000000)
-      })
+    const recorderOptions: MediaRecorderOptions = {
+      mimeType: 'video/' + fileExt,
+      audioBitsPerSecond: getConfig('audio_bps', 64000),
+      videoBitsPerSecond: getConfig('video_bps', 4000000)
+    }
+    console.log('Recorder optioins = %O', recorderOptions)
+
+    await guest.run(function (options: any) {
+      window.TUKIYOMI_START_RECORD(500, options)
       console.log('start recording')
-    })
+    }, [ recorderOptions ])
     ipc.publish('status-msg', 'Start recording.')
   }
 

@@ -11,7 +11,7 @@ import { platform } from 'os'
 import safeCall from '../common/safe'
 
 export const START_FROM_NPM = process.env.START_FROM_NPM === 'true'
-export const IS_DEV = process.env.NODE_ENV === 'development' || START_FROM_NPM
+export const IS_DEV = process.env.NODE_ENV === 'development' || START_FROM_NPM || process.argv.includes('--dev')
 export const RUN_IN_REPO = START_FROM_NPM ||
   Object.keys(process.env).filter(k => k.startsWith('ELECTRON_WEBPACK_')).length > 0
 export const IS_WIN32 = platform() === 'win32'

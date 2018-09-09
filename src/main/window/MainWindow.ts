@@ -9,7 +9,7 @@ import pluginLoader from '../plugin/loader'
 
 import proxy from '../proxy/proxies'
 
-import { IS_DEV } from '../env'
+import { IS_DEV, RUN_IN_REPO } from '../env'
 import { publish } from '../ipc'
 
 const HOST_URL_WHITELIST = [
@@ -45,7 +45,7 @@ export function createMainWindow () {
     if (process.env.ELECTRON_WEBPACK_WDS_PORT) {
       mainWindow.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
     } else {
-      mainWindow.loadFile(IS_DEV ? 'dist/renderer/index.html' : 'index.html')
+      mainWindow.loadFile(RUN_IN_REPO ? 'dist/renderer/index.html' : 'index.html')
     }
   })
 
