@@ -15,7 +15,7 @@ const CSS_GAME_LAYOUT = require('!!raw-loader!./guest/style/game-layout.css')
 const CSS_LOGIN_FORM = require('!!raw-loader!./guest/style/login-form.css')
 
 // inline config
-const RESIZE_DELAY = 150
+const RESIZE_DELAY = 100
 
 export default function tweakView (gameview: Electron.WebviewTag) {
   const guest = Guest(gameview)

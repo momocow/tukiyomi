@@ -5,7 +5,7 @@
         <game-view></game-view>
       </v-container>
     </v-content>
-    <v-system-bar app fixed status color="blue-grey darken-3" dark>
+    <v-system-bar app fixed color="blue-grey darken-3" dark id="status-bar">
       <span>{{statusMsg}}</span>
       <v-spacer></v-spacer>
       <span>{{time.toLocaleString()}}</span>
@@ -51,6 +51,8 @@ export default class MainApp extends Vue {
   private timer: any
 
   mounted () {
+    (<HTMLDivElement>document.getElementById('status-bar')).style.height = '32px'
+
     let statusTimer: any
     subscribe('status-msg', (evt: Event, msg: string) => {
       if (statusTimer) {
