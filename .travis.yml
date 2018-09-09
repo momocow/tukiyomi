@@ -22,6 +22,7 @@ before_script:
 
 script:
   - npm ci
+  - cd packages/events && npm i && npm run build
   - npm test
   - |
     docker run --rm \

@@ -1,6 +1,6 @@
 import { stringify } from '@iarna/toml'
 import { outputFile, outputFileSync, readJsonSync } from 'fs-extra'
-import _cloneDeep from 'lodash/clonedeep'
+import _cloneDeep from 'lodash/cloneDeep'
 import _get from 'lodash/get'
 import _set from 'lodash/set'
 import _merge from 'lodash/merge'
