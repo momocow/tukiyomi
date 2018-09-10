@@ -3,7 +3,7 @@ Yet another scalable KanColle Browser.
 
 > 🚧 WIP 🚧 前方施工 🚧
 
-![WIP](https://thumbs.gfycat.com/SpicyImmenseGraywolf-size_restricted.gif)
+![WIP](./docs/Ketsushoban.gif))
 
 ## 特色
 - 前端框架採用 [Vue](https://vuejs.org/) + [Typescript](https://www.typescriptlang.org)
