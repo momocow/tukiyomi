@@ -1,6 +1,7 @@
 import { KCSAPIEvent } from "./KCSAPIEvent"
 
 export class MapEvent extends KCSAPIEvent {
+  // TODO parse api_data api_result to KCSAPIEvent
   /**
    * 第 N 海域
    */
