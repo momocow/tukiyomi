@@ -29,4 +29,8 @@ export class KCSAPIEvent extends NetworkEvent {
   get resultMsg () {
     return this.responseJSON.api_result_msg
   }
+
+  toString () {
+    return this.api
+  }
 }

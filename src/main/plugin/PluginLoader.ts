@@ -22,7 +22,7 @@ import { mockBuiltins } from './sandbox/mock-builtin'
 
 import * as ipc from '../ipc'
 
-import { PLUGINS_DIR, ASSETS_DIR, IS_WIN32, DATA_DIR } from '../env'
+import { PLUGINS_DIR, ASSETS_DIR, IS_WIN32, DATA_DIR, IS_DEV } from '../env'
 
 import {
   yarn,
@@ -102,8 +102,10 @@ export default class PluginLoader extends EventEmitter {
     } else {
       PluginLoader.logger.debug('Merging package.json for runtime plugins. (%s)', this._pkgJson)
       const _localPluginsPkg = readJSONSync(this._pkgJson)
-      _localPluginsPkg.dependencies = Object.assign(
-        {}, _localPluginsPkg.dependencies, _defPluginsPkg.dependencies)
+      if (!IS_DEV){
+         _localPluginsPkg.dependencies = Object.assign(
+          {}, _localPluginsPkg.dependencies, _defPluginsPkg.dependencies)
+      }
       outputJSONSync(this._pkgJson, _localPluginsPkg, { spaces: 2 })
     }
   }
@@ -170,7 +172,7 @@ export default class PluginLoader extends EventEmitter {
     // reduce noise
     if (!event.startsWith('network')) {
       PluginLoader.logger.debug(
-        'Broadcast "%s" (%s)', event, evtObj ? evtObj.constructor.name : '')
+        'Broadcast "%s" (%s)', event, evtObj)
     }
     this._pluginInsts.forEach((instance) => {
       instance.emit(event, evtObj)
@@ -347,7 +349,7 @@ export default class PluginLoader extends EventEmitter {
 
           if (meta.tukiyomi && meta.tukiyomi.scopes && authorize(meta.tukiyomi.scopes, 'dom.guest')) {
             ipc.registerCommand('gameview.id', (id: number) => {
-              pluginLogger.debug('Guest utils injected.')
+              PluginLoader.logger.debug('Guest utils injected.')
               vm.freeze(Guest(webContents.fromId(id)), 'guest')
             })
           }
