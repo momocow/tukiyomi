@@ -1,84 +1,56 @@
-# 月夜海瀏覽器 Tukiyomi Browser
-Yet another scalable KanColle Browser.
+# TukiYomi
+Yet another scalable KanColle Browser
 
-> 🚧 WIP 🚧 前方施工 🚧
+[![Build Status](https://travis-ci.org/momocow/tukiyomi.svg?branch=deploy)](https://travis-ci.org/momocow/tukiyomi)
+[![GitHub](https://img.shields.io/github/license/momocow/tukiyomi.svg)](https://github.com/momocow/tukiyomi/blob/master/LICENSE)
+[![Github All Releases](https://img.shields.io/github/downloads/momocow/tukiyomi/total.svg)](https://github.com/momocow/tukiyomi/releases/latest)
+[![written in Typescript](https://img.shields.io/badge/written-typescript-00aaaa.svg)](https://www.typescriptlang.org)
+[![powered by Electron](https://img.shields.io/badge/powered-electron-blue.svg)](https://electronjs.org)
+[![layout by Vue](https://img.shields.io/badge/layout-vue-ff69b4.svg)](https://vuejs.org/)
 
-![WIP](./docs/Ketsushoban.gif))
+> **Disclaimer.**
+> It is still in an early stage of development currently, **<u>use it at your own risk</u>**.
+> TukiYomi Browser follows principles like other KanColle browsers/viewers.
+> That is, the browser will not proactively send any data to DMM or KanColle servers.
+> Instead, it adopts a reactive way, launching a local proxy, to **inspect** communications with KanColle servers. Besides, it will also inject scripts into the DOM in order to perform such as capturing video and audio streams of the game and making the DMM login form fitting the browser viewport.
 
-## 特色
-- 前端框架採用 [Vue](https://vuejs.org/) + [Typescript](https://www.typescriptlang.org)
-- ~~GIF戰鬥紀錄~~ WebM紀錄 (可考慮支援串流)
-- 作者是條牛 🐄
+> 🚧 Everything WIP 🚧
+> 
+> (Including TukiYomi core, TukiYomi Plugin API and TukiYomi Plugin SDK)
+> 
+> ![WIP](./docs/Ketsushoban.gif)
 
+## Documents
+https://tukiyomi.tw/
 
-## 文件
-🚪 [任意門](./docs/README.md)
+- Basic Usage
+- TukiYomi Plugin API
+- TukiYomi Plugin Tutorials
 
-## 開發者看板
-- 在新分支上進行任何修改
-- 主線 `master` 為最新、可執行的版本
-- 請不要在分支 `deploy` 上直接 commit, 推送到這個分支會觸發建置&部屬
-- 勤寫文件 📝
+Written in traditional Chinese by default.
+I18n is in plan.
 
-### 專案初始化
-- 下載原始碼
-```
-git clone https://github.com/momocow/tukiyomi.git
-```
-- 切換到你的分支
-> 新分支
-```
-git checkout -b <branch_name>
-```
-> 舊分支
-```
-git checkout <your_branch>
-```
-- 安裝依賴
-```
-npm install
-```
-- 編譯原始碼
-```
-npm run compile
-```
-- 執行測試
-```
-npm test
-```
-- 執行未封裝之原始碼
-```
-npm start
-```
-- 建置並封裝可執行檔及安裝檔
-```
-npm run build
-```
+## Blog
+https://blog.tukiyomi.tw/
 
-### 任務指令
-- `npm run compile`
-> 編譯結果`/dist`
-- `npm run compile:renderer`
-> (暫*1) 編譯 renderer process 檔案
-- `npm run compile:main`
-> (暫*1) 編譯 main process 檔案
-- `npm run dev`
-> `watch`模式, 使用`electron-webpack dev`, 將執行具有live reload功能(主程序或渲染程序皆支援)之electron應用｡
-- `npm run build`
-> 建置結果`/dist`, 建置安裝檔及自動更新用之文件｡
-- `npm run release`
-> `compile` + `build`
-- `npm start`
-> 請先確認`/compiled`是否存在, 不存在則須先跑`compile`任務｡
+Written in traditional Chinese.
 
-*1: 編譯結果尚須優化 [#1](https://github.com/momocow/tukiyomi/issues/1)
+## Support
+- Read the [documents](https://tukiyomi.tw/).
+> A trouble shooting section may be provided  in the future
 
-## 歡迎 PR 🙏
+- File a [GitHub Issue](https://github.com/momocow/tukiyomi/issues).
 
-## Slack交流頻道
-[Tukiyomi@Slack](https://tuki-yomi.slack.com/messages/CCBG49A07)
+- Join [TukiYomi@Slack](https://tuki-yomi.slack.com/messages/CCBG49A07).
 
-## 歡迎餵食 ☕
-請勿拍打 🤜 無限期掙飯中 🍙
+## PR Welcome 🙏
+
+## Hello, I am MomoCow 🐄
+Feed me plz. 🍙 No violent. 🤜
 
 <a href="https://www.buymeacoffee.com/momocow" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
+## License
+Everything but the icons in this repository are licensed under [the MIT License](https://github.com/momocow/tukiyomi/blob/master/LICENSE).
+
+Icons **SHOULD NOT** be use in projects that are not associated with TukiYomi.
