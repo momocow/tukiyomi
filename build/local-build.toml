@@ -5,8 +5,6 @@ productName = "TukiYomi"
 asar = true
 npmRebuild = true
 
-publish = [ ]
-
 [extraMetadata]
   main = "main.js"
 
