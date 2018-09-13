@@ -32,9 +32,10 @@ export class EventProxy {
       if (this._isKCSAPI) {
         const { pathname } = parseURL(this._request.url)
         if (pathname) {
-          if (pathname.startsWith('/kcsapi/api_req_map/start')) {
+          // TODO dont use startsWith, DANGEROUS! ex. "/kcsapi/api_req_map/start" and "/api_req_map/start_air_base"
+          if (pathname === '/kcsapi/api_req_map/start') {
             pluginLoader.broadcast('kcsapi.map.start', new MapStartEvent(this._request, this._response))
-          } else if (pathname.startsWith('/kcsapi/api_port/port')) {
+          } else if (pathname === '/kcsapi/api_port/port') {
             pluginLoader.broadcast('kcsapi.port', new PortEvent(this._request, this._response))
           }
         }

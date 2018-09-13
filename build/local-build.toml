@@ -1,11 +1,11 @@
 extends = 'build/build.base.toml'
 
 appId = "me.momocow.tukiyomi"
-productName = "tukiyomi"
-artifactName = "tukiyomi-v${version}-local.${ext}"
+productName = "TukiYomi"
 asar = true
 npmRebuild = true
 
+publish = [ ]
 
 [extraMetadata]
   main = "main.js"
@@ -34,9 +34,6 @@ from = "static"
 to = "static"
 
 [win]
-publish = [
-  "github"
-]
 icon = "assets/icons/tukiyomi.ico"
 
   [[win.target]]
@@ -54,15 +51,12 @@ icon = "assets/icons/tukiyomi.ico"
   ]
 
 [nsis]
-artifactName = "tukiyomi-setup-v${version}-local.${ext}"
+artifactName = "TukiYomi-setup-v${version}-local.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
 
 [linux]
-publish = [
-  "github"
-]
 target = [
   "7z",
   "deb",

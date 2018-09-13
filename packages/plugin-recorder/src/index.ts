@@ -19,6 +19,7 @@ import * as dateformat from 'dateformat'
 
 @Plugin({
   default: {
+    output_dir: '',
     media_type: 'webm',
     video_bps: 4000000,
     audio_bps: 64000,
@@ -31,55 +32,60 @@ export default class Recorder {
 
   @on('kcsapi.map.start')
   async onMapStart (evt: MapStartEvent) {
-    console.log('Map start')
+    try {
+      console.log('Map start')
 
-    const guest = getGuestUtils()
-    // TODO this should be provided by Core
-    const port = await guest.run(function () {
-      return window.TUKIYOMI_STREAM_PORT
-    })
+      const guest = getGuestUtils()
+      // TODO this should be provided by Core
+      const port = await guest.run(function () {
+        return window.TUKIYOMI_STREAM_PORT
+      })
 
-    const fileExt = getConfig('media_type', 'webm').replace(/^video\//, '')
-    const filenameTpl = getConfig('filename', '[{timestamp:yyyymmdd-HHMMss}][{map}] Record')
-    let filename = filenameTpl
-      .replace('{map}', evt.mapReadable)
-    
-    const matched = filename.match(/{timestamp(:(yyyymmdd-HHMMss))?}/)
-    if (matched) {
-      filename = filename.replace(
-        matched[0], matched[2] ? dateformat(matched[2]) : new Date().toISOString())
-    }
-
-    let recordFile = join(env.DATA_DIR, filename)
-
-    let suffix = 1
-    while (existsSync(recordFile + '.' + fileExt)) {
-      recordFile = recordFile.replace(/(\.\d+)?$/, '.' + suffix)
-      suffix++
-    }
-
-    this._ostream = createWriteStream(recordFile + '.' + fileExt)
-    console.info('Outputing to "%s"', recordFile)
-
-    this._live = connect(`ws://127.0.0.1:${port}/live`)
-    this._live.on('blob', (data: ArrayBuffer, meta: { id: number }) => {
-      if (this._ostream) {
-        this._ostream.write(Buffer.from(data))
+      const fileExt = getConfig('media_type', 'webm').replace(/^video\//, '')
+      const filenameTpl = getConfig('filename', '[{timestamp:yyyymmdd-HHMMss}][{map}] Record')
+      let filename = filenameTpl
+        .replace('{map}', evt.mapReadable)
+      
+      const matched = filename.match(/{timestamp(:(yyyymmdd-HHMMss))?}/)
+      if (matched) {
+        filename = filename.replace(
+          matched[0], matched[2] ? dateformat(matched[2]) : new Date().toISOString())
       }
-    })
 
-    const recorderOptions: MediaRecorderOptions = {
-      mimeType: 'video/' + fileExt,
-      audioBitsPerSecond: getConfig('audio_bps', 64000),
-      videoBitsPerSecond: getConfig('video_bps', 4000000)
+      const outputDir = getConfig('output_dir', env.DATA_DIR)
+      let recordFile = join(outputDir, filename)
+
+      let suffix = 1
+      while (existsSync(recordFile + '.' + fileExt)) {
+        recordFile = recordFile.replace(/(\.\d+)?$/, '.' + suffix)
+        suffix++
+      }
+
+      this._ostream = createWriteStream(recordFile + '.' + fileExt)
+      console.info('Outputing to "%s"', recordFile)
+
+      this._live = connect(`ws://127.0.0.1:${port}/live`)
+      this._live.on('blob', (data: ArrayBuffer, meta: { id: number }) => {
+        if (this._ostream) {
+          this._ostream.write(Buffer.from(data))
+        }
+      })
+
+      const recorderOptions: MediaRecorderOptions = {
+        mimeType: 'video/' + fileExt,
+        audioBitsPerSecond: getConfig('audio_bps', 64000),
+        videoBitsPerSecond: getConfig('video_bps', 4000000)
+      }
+      console.log('Recorder optioins = %O', recorderOptions)
+
+      await guest.run(function (options: any) {
+        window.TUKIYOMI_START_RECORD(500, options)
+        console.log('start recording')
+      }, [ recorderOptions ])
+      ipc.publish('status-msg', 'Start recording.')
+    } catch (e) {
+      console.error(e)
     }
-    console.log('Recorder optioins = %O', recorderOptions)
-
-    await guest.run(function (options: any) {
-      window.TUKIYOMI_START_RECORD(500, options)
-      console.log('start recording')
-    }, [ recorderOptions ])
-    ipc.publish('status-msg', 'Start recording.')
   }
 
   @on('network.reload')

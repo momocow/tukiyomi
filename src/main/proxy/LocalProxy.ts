@@ -126,7 +126,6 @@ export class LocalProxy {
         }
 
         default: {
-          const remoteUrl = url.parse(`https://${req.url}`)
           remoteSock = net.connect(parseInt(remoteUrl.port || '443'), remoteUrl.hostname, () => {
             clientSock.write("HTTP/1.1 200 Connection Established\r\nConnection: close\r\n\r\n")
             remoteSock.write(head)
