@@ -49,7 +49,7 @@ icon = "assets/icons/tukiyomi.ico"
   ]
 
 [nsis]
-artifactName = "TukiYomi-setup-v${version}-local.${ext}"
+artifactName = "${productName}-setup-${version}-local.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true

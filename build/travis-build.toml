@@ -7,7 +7,7 @@ publish = [
 ]
 
 [nsis]
-artifactName = "TukiYomi-setup-v${version}.${ext}"
+artifactName = "${productName}-setup-${version}.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
