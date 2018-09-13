@@ -1,8 +1,7 @@
 extends = 'build/build.base.toml'
 
 appId = "me.momocow.tukiyomi"
-productName = "tukiyomi"
-artifactName = "tukiyomi-v${version}-local.${ext}"
+productName = "TukiYomi"
 asar = true
 npmRebuild = true
 
@@ -54,7 +53,7 @@ icon = "assets/icons/tukiyomi.ico"
   ]
 
 [nsis]
-artifactName = "tukiyomi-setup-v${version}-local.${ext}"
+artifactName = "TukiYomi-setup-v${version}-local.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true

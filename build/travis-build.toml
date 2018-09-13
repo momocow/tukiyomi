@@ -2,10 +2,10 @@ extends = 'build/local-build.toml'
 
 # -build.${env.TRAVIS_BUILD_NUMBER}
 # To achieve predictable download link
-artifactName = "tukiyomi-v${version}.${ext}"
+artifactName = "TukiYomi-v${version}-${os}-${arch}.${ext}"
 
 [nsis]
-artifactName = "tukiyomi-setup-v${version}.${ext}"
+artifactName = "TukiYomi-setup-v${version}.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
