@@ -2,8 +2,6 @@ extends = 'build/local-build.toml'
 
 # -build.${env.TRAVIS_BUILD_NUMBER}
 # To achieve predictable download link
-artifactName = "TukiYomi-v${version}-${os}-${arch}.${ext}"
-
 publish = [
   "github"
 ]
