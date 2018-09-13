@@ -4,6 +4,10 @@ extends = 'build/local-build.toml'
 # To achieve predictable download link
 artifactName = "TukiYomi-v${version}-${os}-${arch}.${ext}"
 
+publish = [
+  "github"
+]
+
 [nsis]
 artifactName = "TukiYomi-setup-v${version}.${ext}"
 oneClick = false

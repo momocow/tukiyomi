@@ -5,6 +5,7 @@ productName = "TukiYomi"
 asar = true
 npmRebuild = true
 
+publish = [ ]
 
 [extraMetadata]
   main = "main.js"
@@ -33,9 +34,6 @@ from = "static"
 to = "static"
 
 [win]
-publish = [
-  "github"
-]
 icon = "assets/icons/tukiyomi.ico"
 
   [[win.target]]
@@ -59,9 +57,6 @@ allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
 
 [linux]
-publish = [
-  "github"
-]
 target = [
   "7z",
   "deb",

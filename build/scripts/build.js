@@ -5,6 +5,7 @@ const BUILD_KIT_ROOT = join(__dirname, '..')
 
 module.exports = function ({ win, linux }, travis) {
   return builder.build({
+    publish: travis ? undefined : 'never',
     config: travis ? join(BUILD_KIT_ROOT, 'travis-build.toml')
       : join(BUILD_KIT_ROOT, 'local-build.toml'),
     win: win ? [] : undefined,
