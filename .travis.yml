@@ -11,7 +11,7 @@ cache:
     - $HOME/.cache/electron-builder
 
 env:
-  - SENTRY_ORG=momocow SENTRY_PROJECT=tukiyomi
+  - TRAVIS=1 SENTRY_ORG=momocow SENTRY_PROJECT=tukiyomi
 
 install:
   - npm install @sentry/cli -g
