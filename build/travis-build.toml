@@ -1,13 +1,13 @@
 extends = 'build/local-build.toml'
 
-# -build.${env.TRAVIS_BUILD_NUMBER}
-# To achieve predictable download link
+artifactName = "${productName}-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
+
 publish = [
   "github"
 ]
 
 [nsis]
-artifactName = "${productName}-setup-${version}.${ext}"
+artifactName = "${productName}-setup-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
