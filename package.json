@@ -9,7 +9,14 @@
     "compile": "gulp compile",
     "build": "gulp build",
     "release": "gulp compile && gulp build",
+    "vers-bump": "standard-version",
+    "commit": "git-cz",
     "test": "echo No tests yet. Pass it!"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   },
   "repository": {
     "type": "git",
@@ -35,6 +42,8 @@
     "@types/uuid": "^3.4.3",
     "@vue/component-compiler-utils": "^2.2.0",
     "babel-register": "^6.26.0",
+    "commitizen": "^2.10.1",
+    "cz-conventional-changelog": "^2.1.0",
     "electron": "^2.0.8",
     "electron-builder": "^20.28.4",
     "electron-webpack": "^2.3.1",
@@ -55,6 +64,7 @@
     "html-loader": "^0.5.5",
     "mri": "^1.1.1",
     "raw-loader": "^0.5.1",
+    "standard-version": "^4.4.0",
     "ts-loader": "^4.5.0",
     "ts-node": "^7.0.1",
     "typescript": "^3.0.3",
