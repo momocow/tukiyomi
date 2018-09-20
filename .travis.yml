@@ -20,6 +20,7 @@ before_script:
   - export SENTRY_RELEASE_VERSION=$(sentry-cli releases propose-version)
   - echo $SENTRY_RELEASE_VERSION > ./assets/RELEASE
   - bash ./travis/build-submodules.sh
+  - npm run vers-bump
 
 script:
   - |
