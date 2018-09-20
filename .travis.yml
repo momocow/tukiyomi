@@ -17,10 +17,12 @@ install:
   - npm install @sentry/cli -g
 
 before_script:
+  - bash ./travis/git-setup.sh
   - export SENTRY_RELEASE_VERSION=$(sentry-cli releases propose-version)
   - echo $SENTRY_RELEASE_VERSION > ./assets/RELEASE
   - bash ./travis/build-submodules.sh
   - npm run vers-bump
+  - git push origin-for-travis --tags
 
 script:
   - |
