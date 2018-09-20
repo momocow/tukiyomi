@@ -38,10 +38,13 @@ script:
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
-# Announce a release to Sentry
 after_success:
+  - bash ./build/release.sh
+  # Announce a release to Sentry
   - sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE_VERSION
   - sentry-cli releases set-commits --auto $SENTRY_RELEASE_VERSION
+  # Rebuild netlify
+  - curl -X POST -d '' $NETLIFY_WEBHOOK
 
 branches:
   only:
