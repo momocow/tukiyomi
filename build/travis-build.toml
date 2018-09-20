@@ -1,13 +1,13 @@
 extends = 'build/local-build.toml'
 
-artifactName = "${productName}-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
+artifactName = "${productName}-v${version}-build.${env.TRAVIS_BUILD_NUMBER}-${arch}-${os}.${ext}"
 
 publish = [
   "github"
 ]
 
 [nsis]
-artifactName = "${productName}-setup-v${version}-build.${env.TRAVIS_BUILD_NUMBER}.${ext}"
+artifactName = "${productName}-setup-v${version}-build.${env.TRAVIS_BUILD_NUMBER}-${arch}-${os}.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true

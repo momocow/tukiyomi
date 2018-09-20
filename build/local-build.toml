@@ -4,7 +4,7 @@ appId = "me.momocow.tukiyomi"
 productName = "TukiYomi"
 asar = true
 npmRebuild = true
-artifactName = "${productName}-v${version}-local.${ext}"
+artifactName = "${productName}-v${version}-local-${arch}-${os}.${ext}"
 
 [extraMetadata]
   main = "main.js"
@@ -50,7 +50,7 @@ icon = "assets/icons/tukiyomi.ico"
   ]
 
 [nsis]
-artifactName = "${productName}-setup-v${version}-local.${ext}"
+artifactName = "${productName}-setup-v${version}-local-${arch}-${os}.${ext}"
 oneClick = false
 allowToChangeInstallationDirectory = true
 multiLanguageInstaller = true
