@@ -9,7 +9,7 @@
     "compile": "gulp compile",
     "build": "gulp build",
     "release": "gulp compile && gulp build",
-    "vers-bump": "standard-version",
+    "vers-bump": "standard-version --message \"chore(release): %s [skip ci]\" --infile ./docs/CHANGELOG.md",
     "commit": "git-cz",
     "test": "echo No tests yet. Pass it!"
   },

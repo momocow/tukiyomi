@@ -18,14 +18,10 @@ install:
 
 before_script:
   - export SENTRY_RELEASE_VERSION=$(sentry-cli releases propose-version)
-  - echo $SENTRY_RELEASE_VERSION > RELEASE
+  - echo $SENTRY_RELEASE_VERSION > ./assets/RELEASE
+  - bash ./travis/build-submodules.sh
 
 script:
-  - npm ci
-  - cd packages/events
-  - npm i && npm run build
-  - cd ../..
-  - npm test
   - |
     docker run --rm \
       --env-file <(env | grep -v '\r' | grep -iE 'DEBUG|NODE_|ELECTRON_|YARN_|NPM_|CI|CIRCLE|TRAVIS|APPVEYOR_|CSC_|_TOKEN|_KEY|AWS_|STRIP|BUILD_') \
@@ -34,12 +30,12 @@ script:
       -v ~/.cache/electron-builder:/root/.cache/electron-builder \
       electronuserland/builder:wine \
       /bin/bash -c \
-      "NODE_ENV=production npm run release -- --linux --win"
+      "npm test && NODE_ENV=production npm run release -- --linux --win"
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
 after_success:
-  - bash ./build/release.sh
+  - bash ./travis/release.sh
   # Announce a release to Sentry
   - sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE_VERSION
   - sentry-cli releases set-commits --auto $SENTRY_RELEASE_VERSION

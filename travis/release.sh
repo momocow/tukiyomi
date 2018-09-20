@@ -6,6 +6,7 @@ git checkout deploy
 npm run vers-bump
 git push --quiet --set-upstream origin-for-travis deploy
 
+git pull origin-for-travis master
 git checkout master
 git merge deploy
 git push --quiet --set-upstream origin-for-travis master
