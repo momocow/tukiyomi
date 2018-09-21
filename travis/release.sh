@@ -1,4 +1,3 @@
-git checkout deploy
 git push origin-for-travis deploy
 
 git pull origin-for-travis master

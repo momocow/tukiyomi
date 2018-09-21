@@ -18,13 +18,14 @@ install:
 
 before_script:
   - bash ./travis/git-setup.sh
-  - export SENTRY_RELEASE_VERSION=$(sentry-cli releases propose-version)
-  - echo $SENTRY_RELEASE_VERSION > ./assets/RELEASE
+  - "echo Branch: \"$(bash ./travis/which-branch.sh)\""
   - bash ./travis/build-submodules.sh
-  - npm run vers-bump
-  - git push origin-for-travis --tags
 
 script:
+  - npm test
+  - bash ./travis/sentry-init.sh
+  - npm run vers-bump
+  - git push origin-for-travis --tags
   - |
     docker run --rm \
       --env-file <(env | grep -v '\r' | grep -iE 'DEBUG|NODE_|ELECTRON_|YARN_|NPM_|CI|CIRCLE|TRAVIS|APPVEYOR_|CSC_|_TOKEN|_KEY|AWS_|STRIP|BUILD_') \
@@ -33,17 +34,13 @@ script:
       -v ~/.cache/electron-builder:/root/.cache/electron-builder \
       electronuserland/builder:wine \
       /bin/bash -c \
-      "npm test && NODE_ENV=production npm run release -- --linux --win"
+      "NODE_ENV=production npm run release -- --linux --win"
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
 after_success:
   - bash ./travis/release.sh
-  # Announce a release to Sentry
-  - sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE_VERSION
-  - sentry-cli releases set-commits --auto $SENTRY_RELEASE_VERSION
-  # Rebuild netlify
-  - curl -X POST -d '' $NETLIFY_WEBHOOK
+  - bash ./travis/sentry-release.sh
 
 branches:
   only:
