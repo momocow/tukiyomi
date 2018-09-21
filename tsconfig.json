@@ -1,15 +1,10 @@
 {
   "extends": "./node_modules/electron-webpack/tsconfig-base.json",
   "compilerOptions": {
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "resolveJsonModule": true
   },
-  "exclude": [
-    "packages",
-    "plugins",
-    "test",
-    "capture",
-    "build",
-    "assets",
-    "static"
+  "include": [
+    "./src"
   ]
 }
